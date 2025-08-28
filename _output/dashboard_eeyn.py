@@ -30,7 +30,7 @@ COLORES_PLANES = {
 def cargar_kpis_inscripciones():
     """Carga los KPIs desde el archivo CSV de inscripciones."""
     try:
-        df_kpi = pd.read_csv('_output/inscripciones_materias/KPI_insc_materias.csv', header=None, names=['Indicador', 'Valor'])
+        df_kpi = pd.read_csv('_output/inscripciones_materias/KPI_insc_materias.csv', header=None, names=['Indicador', 'Valor'], decimal=',')
         kpis = {row['Indicador']: row['Valor'] for _, row in df_kpi.iterrows()}
         return kpis
     except Exception as e:
@@ -41,8 +41,8 @@ def cargar_kpis_inscripciones():
 def cargar_kpis_egresados():
     """Carga los KPIs desde el archivo CSV de egresados."""
     try:
-        df_kpi = pd.read_csv('_output/egresados/Egresados_KPI.csv', encoding='latin1', header=None, names=['Indicador', 'Valor'])
-        kpis = {row['Indicador']: str(row['Valor']).replace(',', '.') for _, row in df_kpi.iterrows()}
+        df_kpi = pd.read_csv('_output/egresados/Egresados_KPI.csv', encoding='latin1', header=None, names=['Indicador', 'Valor'], decimal=',')
+        kpis = {row['Indicador']: row['Valor'] for _, row in df_kpi.iterrows()}
         print("✅ Archivo Egresados_KPI.csv cargado correctamente.")
         return kpis
     except Exception as e:
@@ -53,7 +53,7 @@ def cargar_kpis_egresados():
 def cargar_evolucion_todas():
     """Carga los datos de evolución de todas las carreras."""
     try:
-        df = pd.read_csv('_output/inscripciones_materias/TODAS_evolucion.csv')
+        df = pd.read_csv('_output/inscripciones_materias/TODAS_evolucion.csv', decimal=',')
         df = df.dropna(how='all')
         carreras_df = df[~df['Inscripciones'].str.contains('Total', na=False)]
         return carreras_df
@@ -65,7 +65,7 @@ def cargar_evolucion_todas():
 def cargar_evolucion_grado():
     """Carga los datos de evolución solo de carreras de grado."""
     try:
-        df = pd.read_csv('_output/inscripciones_materias/GRADO_evolucion.csv')
+        df = pd.read_csv('_output/inscripciones_materias/GRADO_evolucion.csv', decimal=',')
         df = df.dropna(how='all')
         carreras_df = df[~df['Inscripciones'].str.contains('Total', na=False)]
         return carreras_df
@@ -77,7 +77,7 @@ def cargar_evolucion_grado():
 def cargar_cpu_materias():
     """Carga los datos de CPU por cantidad de materias."""
     try:
-        df = pd.read_csv('_output/inscripciones_materias/CPU_cantidad_materias.csv')
+        df = pd.read_csv('_output/inscripciones_materias/CPU_cantidad_materias.csv', decimal=',')
         return df
     except Exception as e:
         st.error(f"Error cargando CPU materias: {e}")
@@ -87,10 +87,8 @@ def cargar_cpu_materias():
 def cargar_datos_egresados():
     """Carga los datos de egresados desde el archivo CSV."""
     try:
-        df = pd.read_csv('_output/egresados/Egresados_duración.csv', encoding='latin1')
+        df = pd.read_csv('_output/egresados/Egresados_duración.csv', encoding='latin1', decimal=',')
         df.columns = ['Carrera - Plan', 'Cantidad desde 1994', 'Duración promedio', 'Cantidad (Inscriptos 2009 en adelante)', 'Duración (2009 en adelante)']
-        df['Duración promedio'] = df['Duración promedio'].str.replace(',', '.').astype(float)
-        df['Duración (2009 en adelante)'] = df['Duración (2009 en adelante)'].str.replace(',', '.').astype(float)
         return df
     except Exception as e:
         st.error(f"Error al cargar el archivo de egresados: {e}")
@@ -100,10 +98,9 @@ def cargar_datos_egresados():
 def cargar_egresados_2024():
     """Carga los datos de egresados del año 2024."""
     try:
-        df = pd.read_csv('_output/egresados/Egresados_2024.csv', encoding='latin1')
+        df = pd.read_csv('_output/egresados/Egresados_2024.csv', encoding='latin1', decimal=',')
         df.columns = ['Carrera', 'Cantidad', 'Duración Promedio']
         df = df[df['Carrera'] != 'Total']
-        df['Duración Promedio'] = df['Duración Promedio'].str.replace(',', '.').astype(float)
         return df
     except Exception as e:
         st.error(f"Error al cargar el archivo de egresados 2024: {e}")
@@ -113,8 +110,8 @@ def cargar_egresados_2024():
 def cargar_egresados_tasa():
     """Carga los datos de tasa de graduación de egresados."""
     try:
-        df = pd.read_csv('_output/egresados/Egresados_tasa.csv', encoding='latin1')
-        df['Tasa'] = df['Tasa'].str.replace(',', '.').str.replace('%', '').astype(float)
+        df = pd.read_csv('_output/egresados/Egresados_tasa.csv', encoding='latin1', decimal=',')
+        df['Tasa'] = df['Tasa'].astype(str).str.replace('%', '').astype(float)
         return df
     except Exception as e:
         st.error(f"Error al cargar el archivo de tasas de egresados: {e}")
@@ -312,7 +309,6 @@ def crear_grafico_egresados_2024(df):
             plot_bgcolor='white',
             showlegend=False
         )
-        
         return fig
     except Exception as e:
         st.error(f"Error creando el gráfico de egresados 2024: {e}")
@@ -325,8 +321,11 @@ def crear_grafico_tasa_graduacion(df):
             st.warning("Datos de tasas de graduación no disponibles.")
             return None
         
+        # Filtrar valores de Tasa iguales a 0
+        df_plot = df[df['Tasa'] > 0]
+        
         fig = px.bar(
-            df,
+            df_plot,
             x='Carrera',
             y='Tasa',
             color='Plan',
@@ -343,7 +342,7 @@ def crear_grafico_tasa_graduacion(df):
             height=400,
             xaxis_title="Carrera",
             yaxis_title="Tasa de Graduación (%)",
-            yaxis_range=[0, df['Tasa'].max() * 1.1],
+            yaxis_range=[0, df_plot['Tasa'].max() * 1.1],
             plot_bgcolor='white',
             showlegend=True
         )
@@ -359,6 +358,9 @@ def crear_grafico_cantidad_graduados_por_plan(df):
             st.warning("Datos de graduados por plan no disponibles.")
             return None
         
+        # Separar la columna 'Carrera - Plan' en 'Carrera' y 'Plan'
+        df[['Carrera', 'Plan']] = df['Carrera - Plan'].str.split(' - ', expand=True)
+
         fig = px.bar(
             df,
             x='Carrera',
@@ -547,7 +549,7 @@ def show_egresados_dashboard():
         figura_duracion = crear_grafico_duracion_carrera(df_egresados)
         if figura_duracion:
             st.plotly_chart(figura_duracion, use_container_width=True)
-    
+            
     with st.expander("ℹ️ Información sobre los datos"):
         st.write("**Carreras y programas:**")
         st.write("• CP - Contador Público")
@@ -561,6 +563,7 @@ def show_egresados_dashboard():
         st.write("**Última actualización:** ", datetime.now().strftime("%d/%m/%Y %H:%M"))
 
 
+# --- Función Principal ---
 def main():
     st.set_page_config(
         page_title="Dashboard Académico EEyN",
@@ -581,7 +584,7 @@ def main():
 
         if st.button("👨‍🎓 Inscripciones a Materias", key="btn_inscripciones"):
             st.session_state.page = "inscripciones"
-        if st.button("� Egresados", key="btn_egresados"):
+        if st.button("🎓 Egresados", key="btn_egresados"):
             st.session_state.page = "egresados"
         
         st.markdown("<hr style='border: 1px solid #ddd;'>", unsafe_allow_html=True)

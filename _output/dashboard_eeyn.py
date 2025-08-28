@@ -128,6 +128,8 @@ def crear_grafico_estudiantes_por_carrera(df_evolucion, filtro_tipo):
             return None
         carreras_2025 = df_evolucion[['Inscripciones', '2025']].copy()
         carreras_2025.columns = ['Carrera', 'Estudiantes']
+        # CORRECCIÓN: Asegurarse de que la columna 'Estudiantes' sea numérica
+        carreras_2025['Estudiantes'] = pd.to_numeric(carreras_2025['Estudiantes'])
         carreras_2025 = carreras_2025.sort_values('Estudiantes', ascending=True)
         
         df_filtered = carreras_2025[carreras_2025['Carrera'].isin(COLORES_CARRERAS.keys())]
@@ -168,6 +170,8 @@ def crear_grafico_evolucion_temporal(df_evolucion, filtro_tipo):
             value_name='Estudiantes'
         )
         df_melted.columns = ['Carrera', 'Año', 'Estudiantes']
+        # CORRECCIÓN: Asegurarse de que la columna 'Estudiantes' sea numérica
+        df_melted['Estudiantes'] = pd.to_numeric(df_melted['Estudiantes'])
         
         fig = px.line(
             df_melted,
@@ -202,6 +206,8 @@ def crear_grafico_inscripciones_cuatrimestre(df_evolucion):
             value_name='Estudiantes'
         )
         df_melted.columns = ['Carrera', 'Año', 'Estudiantes']
+        # CORRECCIÓN: Asegurarse de que la columna 'Estudiantes' sea numérica
+        df_melted['Estudiantes'] = pd.to_numeric(df_melted['Estudiantes'])
         fig = px.bar(
             df_melted,
             x='Año',

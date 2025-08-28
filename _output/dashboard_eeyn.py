@@ -111,7 +111,8 @@ def cargar_egresados_tasa():
     """Carga los datos de tasa de graduación de egresados."""
     try:
         df = pd.read_csv('_output/egresados/Egresados_tasa.csv', encoding='latin1', decimal=',')
-        df['Tasa'] = df['Tasa'].astype(str).str.replace('%', '').astype(float)
+        # CORRECCIÓN: Se reemplaza el '%' y luego la coma decimal ',' por un punto '.' antes de convertir a float.
+        df['Tasa'] = df['Tasa'].astype(str).str.replace('%', '').str.replace(',', '.').astype(float)
         return df
     except Exception as e:
         st.error(f"Error al cargar el archivo de tasas de egresados: {e}")

@@ -1,1 +1,1 @@
-web: python -m streamlit run _output/dashboard_eeyn.py --server.port $PORT --server.enableCORS false --server.enableXsrfProtection false
+web: streamlit run dashboard_eeyn.py --server.port $PORT --server.enableCORS false --server.enableXsrfProtection false

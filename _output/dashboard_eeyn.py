@@ -53,7 +53,20 @@ def cargar_kpis_egresados():
 def cargar_evolucion_todas():
     """Carga los datos de evolución de todas las carreras."""
     try:
-        df = pd.read_csv('_output/inscripciones_materias/TODAS_evolucion.csv', decimal=',')
+        # Leemos el CSV. Quitamos decimal=',' para manejar la conversión manualmente y de forma más robusta.
+        df = pd.read_csv('_output/inscripciones_materias/TODAS_evolucion.csv')
+        
+        # Columnas que deben ser numéricas
+        columnas_numericas = ['2020', '2021', '2022', '2023', '2024', '2025']
+        
+        # Forzamos la conversión a tipo numérico, convirtiendo errores en NaN (Not a Number)
+        for col in columnas_numericas:
+            if col in df.columns:
+                df[col] = pd.to_numeric(df[col], errors='coerce')
+        
+        # Reemplazamos los NaN que puedan haber surgido con 0 y convertimos a enteros
+        df[columnas_numericas] = df[columnas_numericas].fillna(0).astype(int)
+
         df = df.dropna(how='all')
         carreras_df = df[~df['Inscripciones'].str.contains('Total', na=False)]
         return carreras_df
@@ -65,7 +78,20 @@ def cargar_evolucion_todas():
 def cargar_evolucion_grado():
     """Carga los datos de evolución solo de carreras de grado."""
     try:
-        df = pd.read_csv('_output/inscripciones_materias/GRADO_evolucion.csv', decimal=',')
+        # Leemos el CSV. Quitamos decimal=',' para manejar la conversión manualmente y de forma más robusta.
+        df = pd.read_csv('_output/inscripciones_materias/GRADO_evolucion.csv')
+
+        # Columnas que deben ser numéricas
+        columnas_numericas = ['2020', '2021', '2022', '2023', '2024', '2025']
+        
+        # Forzamos la conversión a tipo numérico, convirtiendo errores en NaN (Not a Number)
+        for col in columnas_numericas:
+            if col in df.columns:
+                df[col] = pd.to_numeric(df[col], errors='coerce')
+        
+        # Reemplazamos los NaN que puedan haber surgido con 0 y convertimos a enteros
+        df[columnas_numericas] = df[columnas_numericas].fillna(0).astype(int)
+
         df = df.dropna(how='all')
         carreras_df = df[~df['Inscripciones'].str.contains('Total', na=False)]
         return carreras_df
@@ -128,8 +154,6 @@ def crear_grafico_estudiantes_por_carrera(df_evolucion, filtro_tipo):
             return None
         carreras_2025 = df_evolucion[['Inscripciones', '2025']].copy()
         carreras_2025.columns = ['Carrera', 'Estudiantes']
-        # CORRECCIÓN: Asegurarse de que la columna 'Estudiantes' sea numérica
-        carreras_2025['Estudiantes'] = pd.to_numeric(carreras_2025['Estudiantes'])
         carreras_2025 = carreras_2025.sort_values('Estudiantes', ascending=True)
         
         df_filtered = carreras_2025[carreras_2025['Carrera'].isin(COLORES_CARRERAS.keys())]
@@ -170,8 +194,6 @@ def crear_grafico_evolucion_temporal(df_evolucion, filtro_tipo):
             value_name='Estudiantes'
         )
         df_melted.columns = ['Carrera', 'Año', 'Estudiantes']
-        # CORRECCIÓN: Asegurarse de que la columna 'Estudiantes' sea numérica
-        df_melted['Estudiantes'] = pd.to_numeric(df_melted['Estudiantes'])
         
         fig = px.line(
             df_melted,
@@ -206,8 +228,6 @@ def crear_grafico_inscripciones_cuatrimestre(df_evolucion):
             value_name='Estudiantes'
         )
         df_melted.columns = ['Carrera', 'Año', 'Estudiantes']
-        # CORRECCIÓN: Asegurarse de que la columna 'Estudiantes' sea numérica
-        df_melted['Estudiantes'] = pd.to_numeric(df_melted['Estudiantes'])
         fig = px.bar(
             df_melted,
             x='Año',

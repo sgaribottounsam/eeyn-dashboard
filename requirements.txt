@@ -4,4 +4,4 @@ plotly-express
 plotly
 dash
 openpyxl
-streamlit
+streamlit==1.30.0

@@ -4,5 +4,5 @@
 set -e
 
 # Ejecutar la aplicación Streamlit
-streamlit run dashboard_eeyn.py --server.port $PORT --server.headless true
+streamlit run _output/dashboard_eeyn.py --server.port $PORT --server.headless true
 

@@ -41,7 +41,7 @@ def cargar_kpis_inscripciones():
 def cargar_kpis_egresados():
     """Carga los KPIs desde el archivo CSV de egresados."""
     try:
-        df_kpi = pd.read_csv('_output/egresados/Egresados_KPI.csv', encoding='latin1', header=None, names=['Indicador', 'Valor'], decimal=',')
+        df_kpi = pd.read_csv('_output/egresados/Egresados_KPI.csv', encoding='utf-8', header=None, names=['Indicador', 'Valor'], decimal=',')
         kpis = {row['Indicador']: row['Valor'] for _, row in df_kpi.iterrows()}
         print("✅ Archivo Egresados_KPI.csv cargado correctamente.")
         return kpis
@@ -113,7 +113,7 @@ def cargar_cpu_materias():
 def cargar_datos_egresados():
     """Carga los datos de egresados desde el archivo CSV."""
     try:
-        df = pd.read_csv('_output/egresados/Egresados_duración.csv', encoding='latin1', decimal=',')
+        df = pd.read_csv('_output/egresados/Egresados_duración.csv', encoding='utf-8', decimal=',')
         df.columns = ['Carrera - Plan', 'Cantidad desde 1994', 'Duración promedio', 'Cantidad (Inscriptos 2009 en adelante)', 'Duración (2009 en adelante)']
         return df
     except Exception as e:
@@ -385,8 +385,11 @@ def crear_grafico_cantidad_graduados_por_plan(df):
             st.warning("Datos de graduados por plan no disponibles.")
             return None
         
-        # Separar la columna 'Carrera - Plan' en 'Carrera' y 'Plan'
-        df[['Carrera', 'Plan']] = df['Carrera - Plan'].str.split(' - ', expand=True)
+        # La línea que causaba el error fue eliminada.
+        # Esta función ahora asume que el DataFrame de entrada ya tiene
+        # las columnas 'Carrera' y 'Plan' separadas, lo cual es el caso
+        # para el archivo Egresados_tasa.csv.
+        # df[['Carrera', 'Plan']] = df['Carrera - Plan'].str.split(' - ', expand=True)
 
         fig = px.bar(
             df,
@@ -629,3 +632,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

@@ -1,0 +1,45 @@
+codigo,Nombre,Nombre femenino,Nombre no binario,Tipo de Certificado,Nivel de Título,Título araucano,Estado
+CA-CPU1,Certificado de Aprobación del Curso de Prep. Universitaria - EEYN,Certificado de Aprobación del Curso de Prep. Universitaria - EEYN,,Certificado de Aprobación del Curso de Preparación Universitaria,Final,,Activo
+CA-CPU9,Certificado de Aprobación del Curso de Prep. Universitaria - EEYN,Certificado de Aprobación del Curso de Prep. Universitaria - EEYN,,Certificado de Aprobación del Curso de Preparación Universitaria,Final,,Activo
+CA-CPUG,Certificado de Aprobación de Curso de Preparación Universitaria - EEYN,Certificado de Aprobación de Curso de Preparación Universitaria - EEYN,,Certificado de Aprobación del Curso de Preparación Universitaria,Final,,Activo
+CA-CPUP,Ciclo Propedéutico Universitario,Ciclo Propedéutico Universitario,,Certificado de Aprobación del Curso de Preparación Universitaria,Final,,Activo
+CA-CPUT,Ciclo Propedéutico Universitario,Ciclo Propedéutico Universitario,,Certificado de Aprobación del Curso de Preparación Universitaria,Final,,Activo
+CC-CPGE,Consultor en Gestión de Empresas,Consultora en Gestión de Empresas,,Certificado de Cumplimiento de un Ciclo,Final,,Activo
+CM-MINT,Movilidad Internacional,Movilidad Internacional,,Movilidad,Final,,Activo
+CM-MNAC,Movilidad Nacional,Movilidad Nacional,,Movilidad,Final,,Activo
+CM-MOVI,Movilidad,Movilidad,,Movilidad,,,Activo
+CV-EEYN,Convalidación de Título Universitario,,,Convalidaciones,,,Activo
+DI-AGTIL,Diplomado en Estudios Avanzados en Gestion  de la Tecnologia y la  Innovacion,Diplomada en Estudios Avanzados en Gestion  de la Tecnologia y la  Innovacion,,Diplomatura,Final,,Activo
+DI-DDMP,Diplomado en Dirección y Marketing de Pymes,Diplomada en Dirección y Marketing de Pymes,,Diplomatura,Final,,Activo
+DI-DEDT,DIPLOMA UNIVERSITARIO EN ECONOMIA Y DESARROLLO DEL TURISMO,DIPLOMA UNIVERSITARIO EN ECONOMIA Y DESARROLLO DEL TURISMO,,Diplomatura,Final,,Activo
+DI-DGAE,Diplomado en Gestión de Actividades Equinas,Diplomada en Gestión de Actividades Equinas,,Diplomatura,Final,,Activo
+DI-DSGT,DIPLOMATURA SUPERIOR EN GUIA DE TURISMO,DIPLOMATURA SUPERIOR EN GUIA DE TURISMO,,Diplomatura,Final,,Activo
+DI-DUGA,Diplomado en Gestión de Agronegocios,Diplomada en Gestión de Agronegocios,,Diplomatura,Final,,Activo
+DI-ESOL,Diploma de Estudios Avanzados en Economia Solidaria,Diploma de Estudios Avanzados en Economia Solidaria,,Diplomatura,Final,,Activo
+DI-EYDT,Diploma Universitario en Economía y Desarrollo del Turismo,Diploma Universitario en Economía y Desarrollo del Turismo,,Diplomatura,Final,,Activo
+DI-FPER,DIPLOMA EN GESTION FINANCIERA PUBLICA CON ENFOQUE A RESULTADOS,DIPLOMA EN GESTION FINANCIERA PUBLICA CON ENFOQUE A RESULTADOS,,Diplomatura,Final,,Activo
+DI-GINT,DIPLOMADO UNIVERSITARIO EN GESTION DE LA INNOVACION Y NEGOCIOS TECNOLOGICOS PARA PYMES,DIPLOMADO UNIVERSITARIO EN GESTION DE LA INNOVACION Y NEGOCIOS TECNOLOGICOS PARA PYMES,,Diplomatura,Final,,Activo
+DI-OLIV,Diplomado en Estudios Avanzados en Teoría Económica Prof.  Dr. Julio H. G Olivera,Diplomada en Estudios Avanzados en Teoría Económica Prof.  Dr. Julio H. G Olivera,,Diplomatura,Final,,Activo
+DO-CECO,Doctor en Ciencias Económicas,Doctora en Ciencias Económicas,,Doctorado,Final,1412,Activo
+DO-EINN,DOCTOR EN ECONOMÍA DE LA INNOVACIÓN,DOCTORA EN ECONOMÍA DE LA INNOVACIÓN,,Doctorado,Final,16269,Activo
+ES-EEDT,Especialista en Economía y Desarrollo del Turismo,Especialista en Economía y Desarrollo del Turismo,,Especialización,Final,7761,Activo
+ES-EGFP,Especialista en Gestión Financiera Pública con enfoque a resultados,Especialista en Gestión Financiera Pública con enfoque a resultados,,Especialización,Final,16696,Activo
+ES-EGTI,ESPECIALISTA EN GESTION DE LA TECNOLOGIA Y LA INNOVACION,ESPECIALISTA EN GESTION DE LA TECNOLOGIA Y LA INNOVACION,,Especialización,Final,10373,Activo
+GR-CCCP,Contador Público,Contadora Pública,,Título de Grado Universitario,Final,450,Activo
+GR-LAGE,Licenciado en Administración y Gestión Empresarial,Licenciada en Administración y Gestión Empresarial,,Título de Grado Universitario,Final,4991,Activo
+GR-LAYG,Licenciado en Administracion y Gestión Empresarial,Licenciada en Administracion y Gestión Empresarial,,Título de Grado Universitario,Final,4991,Activo
+GR-LEC2,Licenciado en Economia,Licenciada en Economia,,Título de Grado Universitario,Final,464,Activo
+GR-LECO,Licenciado en Economía,Licenciada en Economía,,Título de Grado Universitario,Final,464,Activo
+GR-LEDC,Licenciado en Economía del Conocimiento,Licenciada en Economía del Conocimiento,,Título de Grado Universitario,Final,17755,Activo
+GR-LITU,Licenciado en Turismo,Licenciada en Turismo,,Título de Grado Universitario,Final,621,Activo
+GR-LTUR,Licenciado en Turismo,Licenciada en Turismo,,Título de Grado Universitario,Final,621,Activo
+MA-DGTI,Magister en Diseño y Gestión de la tecnología y la Innovación,Magister en Diseño y Gestión de la tecnología y la Innovación,,Maestría,Final,16689,Activo
+MA-ESOL,MAGISTER EN ECONOMIA SOLIDARIA,MAGISTER EN ECONOMIA SOLIDARIA,,Maestría,Final,10742,Activo
+MA-FINA,Magíster en Finanzas,Magíster en Finanzas,,Maestría,Final,1435,Activo
+MA-MEDT,Magister en Economía y Desarrollo del Turismo,Magister en Economía y Desarrollo del Turismo,,Maestría,Final,7762,Activo
+PR-AAGC,ANALISTA UNIVERSITARIO EN ADMINISTRACIÓN Y GESTIÓN CONTABLE,ANALISTA UNIVERSITARIA EN ADMNISTRACIÓN Y GESTIÓN CONTABLE,,Título de Pregrado Universitario,Intermedio,1650,Activo
+PR-AUEN,Analista Universitario en Negocios,Analista Universitario en Negocios,,Título de Pregrado Universitario,Intermedio,4988,Activo
+PR-GTUR,Guía de Turismo,Guía de Turismo,,Título de Pregrado Universitario,Intermedio,4193,Activo
+PR-GUIA,TÉCNICO UNIVERSITARIO EN GUÍA DE TURISMO,TÉCNICA UNIVERSITARIA EN GUÍA DE TURISMO,,Título de Pregrado Universitario,Final,16865,Activo
+PR-MPCC,Martillero Público y Corredor de Comercio,Martillera Pública y Corredora de Comercio,,Título de Pregrado Universitario,Final,6654,Activo
+RV-EEYN,Reválida de Título Universitario,,,Reválidas,,,Activo

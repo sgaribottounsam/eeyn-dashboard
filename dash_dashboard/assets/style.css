@@ -1,0 +1,88 @@
+/* --- assets/style.css --- */
+
+/* --- TIPOGRAFÍA Y COLORES GLOBALES --- */
+body {
+    font-family: 'Saira', sans-serif;
+    background-color: #f8f9fa;
+    color: #212529;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Saira:wght@400;700&display=swap');
+
+h1, h2, h3, h4, h5, h6 {
+    color: #343a40;
+}
+
+/* --- ESTILO PARA CONTENEDORES DE GRÁFICOS Y KPIs --- */
+.six.columns, .three.columns {
+    background-color: white;
+    padding: 20px !important;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    margin-bottom: 20px;
+}
+
+/* --- ESTILOS PARA LAS TARJETAS KPI --- */
+.kpi-card-container {
+    background-color: transparent !important;
+    box-shadow: none !important;
+    padding: 5px !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 160px;
+}
+
+.kpi-content {
+    border: 2px solid #8200e1;
+    border-radius: 8px;
+    padding: 15px;
+    text-align: center;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative; /* Clave para posicionar el botón de adentro */
+}
+
+.kpi-content h5 {
+    margin: 0;
+    font-size: 1rem;
+    color: #495057;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.kpi-content h2 {
+    margin: 5px 0 0 0;
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #8200e1;
+}
+
+/* --- ESTILO ACTUALIZADO PARA EL BOTÓN DE ROTACIÓN --- */
+.kpi-change-button {
+    position: absolute;
+    bottom: 8px; /* Movido a la parte inferior */
+    right: 8px;  /* Mantenido a la derecha */
+    background-color: transparent;
+    border: none;
+    color: #8200e1;
+    font-size: 1.5rem; /* Botón más grande */
+    cursor: pointer;
+    opacity: 0.3;
+    transition: opacity 0.2s ease;
+    padding: 5px; /* Mejor área de clic */
+    line-height: 1; /* Mejor alineación vertical */
+}
+
+.kpi-change-button:hover {
+    opacity: 1;
+}
+
+.kpi-controls {
+    display: none;
+}
+
+
+

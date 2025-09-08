@@ -1,27 +1,24 @@
 import pandas as pd
 import os
+import re
+
+def to_snake_case(name):
+    """Convierte un string a formato snake_case, manejando acentos y caracteres comunes."""
+    name = name.strip()
+    name = re.sub(r'[\s\.\/]+', '_', name) # Reemplaza espacios y otros separadores por _
+    name = re.sub(r'[ÁÉÍÓÚáéíóú]', lambda m: {'Á':'a','É':'e','Í':'i','Ó':'o','Ú':'u','á':'a','é':'e','í':'i','ó':'o','ú':'u'}[m.group(0)], name)
+    name = re.sub(r'[^a-zA-Z0-9_]', '', name) # Elimina caracteres no alfanuméricos restantes
+    return name.lower()
 
 def procesar_reporte_academico(input_filepath, output_filepath):
     """
-    Transforma un reporte académico en formato XLSX, agrupado por carrera,
-    a un formato de tabla CSV plana.
-
-    Args:
-        input_filepath (str): La ruta al archivo XLSX de entrada.
-        output_filepath (str): La ruta donde se guardará el nuevo archivo CSV.
+    Transforma un reporte académico en formato XLSX a un formato de tabla CSV plana,
+    normalizando los nombres de las columnas a snake_case.
     """
     print(f"Iniciando el procesamiento del archivo: {input_filepath}")
 
     try:
-        # Leemos el archivo XLSX sin encabezado y con el motor 'openpyxl'.
         df = pd.read_excel(input_filepath, header=None, engine='openpyxl')
-    except FileNotFoundError:
-        print(f"Error: No se encontró el archivo en la ruta especificada: {input_filepath}")
-        return
-    except ImportError:
-        print("Error: La librería 'openpyxl' es necesaria para leer archivos .xlsx.")
-        print("Por favor, instalala corriendo: pip install openpyxl")
-        return
     except Exception as e:
         print(f"Ocurrió un error al leer el archivo Excel: {e}")
         return
@@ -30,31 +27,25 @@ def procesar_reporte_academico(input_filepath, output_filepath):
     column_headers = None
     current_career = None
 
-    # Iteramos sobre cada fila del archivo
     for index, row in df.iterrows():
         first_cell = str(row.iloc[0])
 
-        # Condición para identificar una fila de carrera
         if pd.notna(row.iloc[0]) and pd.isna(row.iloc[1]):
             current_career = first_cell.strip()
-            print(f"-> Carrera encontrada: {current_career}")
             continue
 
-        # Condición para identificar la fila de encabezados
         if 'Apellido y Nombre' in first_cell:
-            column_headers = list(row)
-            column_headers.append('Carrera')
-            # Limpiamos los encabezados de espacios extra o valores nulos
-            column_headers = [str(h).strip() for h in column_headers if pd.notna(h)]
-            print(f"-> Encabezados encontrados: {column_headers}")
+            # Normalizamos los encabezados a snake_case aquí
+            raw_headers = [str(h).strip() for h in row if pd.notna(h)]
+            column_headers = [to_snake_case(h) for h in raw_headers]
+            column_headers.append('carrera') # Añadimos la nueva columna ya en snake_case
+            print(f"-> Encabezados normalizados encontrados: {column_headers}")
             continue
 
-        # Si ya hemos encontrado los encabezados, las filas restantes son datos
         if column_headers is not None:
             if row.isnull().all():
                 continue
             
-            # Aseguramos que la fila tenga la misma cantidad de columnas que los encabezados (sin 'Carrera')
             row_data = list(row)[:len(column_headers)-1]
             row_data.append(current_career)
             
@@ -69,31 +60,18 @@ def procesar_reporte_academico(input_filepath, output_filepath):
     df_procesado = df_procesado[column_headers]
 
     try:
-        # Asegurarnos de que el directorio de salida exista
         os.makedirs(os.path.dirname(output_filepath), exist_ok=True)
         df_procesado.to_csv(output_filepath, index=False, encoding='utf-8')
-        print("\n¡Procesamiento completado con éxito!")
-        print(f"El archivo limpio ha sido guardado en: {output_filepath}")
-        print(f"Total de registros procesados: {len(df_procesado)}")
+        print(f"\n¡Procesamiento completado! Archivo limpio guardado en: {output_filepath}")
     except Exception as e:
         print(f"Ocurrió un error al guardar el archivo: {e}")
 
-
 if __name__ == '__main__':
-    # --- Configuración ---
-    # El script asume la siguiente estructura de carpetas:
-    # MI_PROYECTO/
-    # ├── data/
-    # │   └── Grado_pregrado_todos.xlsx
-    # └── limpiadores/
-    #     └── limpiador_reporte_alumnos.py (este script)
-
-    """input_path = 'data/Grado_pregrado_todos.xlsx'
-    output_path = 'data/Grado_pregrado_procesado.csv'
-    """
-
-    input_path = 'data/CPU_todos.xlsx'
-    output_path = 'data/CPU_procesados.csv'
+    #input_path = 'data/crudos/Grado_pregrado_todos.xlsx'
+    #output_path = 'data/procesados/Grado_pregrado_procesado.csv'
     
-    # Llama a la función principal con las nuevas rutas
+    input_path = 'data/crudos/CPU_todos.xlsx'
+    output_path = 'data/procesados/CPU_procesados.csv'
+    
     procesar_reporte_academico(input_path, output_path)
+

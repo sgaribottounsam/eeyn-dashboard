@@ -1,23 +1,28 @@
 import pandas as pd
 import sqlite3
 import os
+import re
 
-def crear_e_importar_alumnos(csv_filepath, db_filepath, table_name='estudiantes'):
+def to_snake_case(name):
+    """Convierte un string a formato snake_case, manejando acentos y caracteres comunes."""
+    name = name.strip()
+    name = re.sub(r'[\s\.\/\(\)]+', '_', name) # Reemplaza espacios y otros separadores por _
+    name = re.sub(r'[ÁÉÍÓÚáéíóú]', lambda m: {'Á':'a','É':'e','Í':'i','Ó':'o','Ú':'u','á':'a','é':'e','í':'i','ó':'o','ú':'u'}[m.group(0)], name)
+    name = re.sub(r'[^a-zA-Z0-9_]', '', name) # Elimina caracteres no alfanuméricos restantes
+    return name.lower()
+
+def importar_estudiantes(csv_filepath, db_filepath, table_name='estudiantes'):
     """
-    Crea una tabla en una base de datos SQLite y la puebla con datos de un archivo CSV.
-    Si la tabla ya existe, la elimina y la vuelve a crear para asegurar datos frescos.
-
-    Args:
-        csv_filepath (str): Ruta al archivo CSV con los datos limpios.
-        db_filepath (str): Ruta a la base de datos SQLite que se creará o usará.
-        table_name (str): Nombre de la tabla que se creará.
+    Importa datos de estudiantes desde un CSV (con columnas ya en snake_case)
+    a una tabla SQLite. Si un registro ya existe (basado en la llave primaria),
+    lo reemplaza con la nueva versión.
     """
-    print(f"Iniciando la importación de '{csv_filepath}' a la tabla '{table_name}' en '{db_filepath}'...")
+    print(f"Iniciando la importación de '{csv_filepath}' a la tabla '{table_name}'...")
 
-    # --- Paso 1: Leer el archivo CSV con pandas ---
     try:
         df = pd.read_csv(csv_filepath, encoding='utf-8')
-        print(f"-> Archivo CSV cargado correctamente con {len(df)} filas.")
+        df.dropna(how='all', inplace=True)
+        print(f"-> Archivo CSV cargado. Se encontraron {len(df)} registros.")
     except FileNotFoundError:
         print(f"Error: No se encontró el archivo CSV en la ruta: {csv_filepath}")
         return
@@ -25,79 +30,84 @@ def crear_e_importar_alumnos(csv_filepath, db_filepath, table_name='estudiantes'
         print(f"Ocurrió un error al leer el CSV: {e}")
         return
 
-    # --- Paso 2: Conectarse a la base de datos SQLite ---
+    # El CSV ya debería tener los nombres en snake_case gracias al limpiador,
+    # pero aplicamos la función de nuevo como medida de seguridad.
+    df.columns = [to_snake_case(col) for col in df.columns]
+
     try:
-        # La conexión crea el archivo .db si no existe
         conn = sqlite3.connect(db_filepath)
         cursor = conn.cursor()
-        print("-> Conexión con la base de datos SQLite establecida.")
+        print(f"-> Conexión con la base de datos '{db_filepath}' establecida.")
     except Exception as e:
         print(f"Ocurrió un error al conectar con la base de datos: {e}")
         return
 
-    # --- Paso 3: Crear la tabla ---
-    # Se define la estructura de la tabla con los tipos de datos de SQL.
-    # Usamos TEXT para la mayoría de los campos por flexibilidad, INTEGER para números enteros y REAL para promedios.
+    # --- CAMBIO 1: La PRIMARY KEY ahora es (tipo_y_no_documento, carrera) ---
     create_table_query = f"""
     CREATE TABLE IF NOT EXISTS {table_name} (
-        "Apellido y Nombre" TEXT,
-        "Tipo y N° Documento" TEXT,
-        "Fecha de Nacimiento" TEXT,
-        "Email" TEXT,
-        "Teléfono" TEXT,
-        "Legajo" TEXT,
-        "Plan" TEXT,
-        "Año Ingreso" INTEGER,
-        "Fecha Ingreso" TEXT,
-        "Último Examen" TEXT,
-        "Última Reinscripción" TEXT,
-        "Prom. con Aplazos" REAL,
-        "Prom. sin Aplazos" REAL,
-        "Actividades Aprobadas" INTEGER,
-        "Total Actividades" INTEGER,
-        "Estado inscripción" TEXT,
-        "Carrera" TEXT
+        apellido_y_nombre TEXT,
+        tipo_y_no_documento TEXT,
+        fecha_de_nacimiento TEXT,
+        email TEXT,
+        telefono TEXT,
+        legajo TEXT,
+        plan TEXT,
+        ano_ingreso INTEGER,
+        fecha_ingreso TEXT,
+        ultimo_examen TEXT,
+        ultima_reinscripcion TEXT,
+        prom_con_aplazos REAL,
+        prom_sin_aplazos REAL,
+        actividades_aprobadas INTEGER,
+        total_actividades INTEGER,
+        estado_inscripcion TEXT,
+        carrera TEXT,
+        PRIMARY KEY (tipo_y_no_documento, carrera)
     );
     """
-    
     try:
-        # Eliminamos la tabla si ya existe para evitar datos duplicados o viejos
-        cursor.execute(f"DROP TABLE IF EXISTS {table_name};")
-        # Creamos la tabla nueva
         cursor.execute(create_table_query)
-        print(f"-> Tabla '{table_name}' creada (o reiniciada) exitosamente.")
+        print(f"-> Tabla '{table_name}' asegurada y lista para la inserción.")
     except Exception as e:
         print(f"Ocurrió un error al crear la tabla: {e}")
         conn.close()
         return
         
-    # --- Paso 4: Importar los datos del DataFrame a la tabla SQL ---
+    registros_a_insertar = [tuple(x) for x in df.to_records(index=False)]
+    
+    column_names = ", ".join([f'"{col}"' for col in df.columns])
+    placeholders = ", ".join(["?"] * len(df.columns))
+    
+    # --- CAMBIO 2: Usamos INSERT OR REPLACE para actualizar registros existentes ---
+    insert_query = f"INSERT OR REPLACE INTO {table_name} ({column_names}) VALUES ({placeholders});"
+    
     try:
-        # La función to_sql de pandas es la forma más eficiente de hacer esto
-        df.to_sql(table_name, conn, if_exists='append', index=False)
-        print(f"-> Se importaron {len(df)} registros a la tabla '{table_name}'.")
+        # Contamos los cambios (inserciones + actualizaciones) para dar un reporte más preciso
+        conn.execute("BEGIN TRANSACTION")
+        initial_changes = conn.total_changes
+        
+        cursor.executemany(insert_query, registros_a_insertar)
+        
+        conn.commit()
+        final_changes = conn.total_changes
+        
+        registros_afectados = final_changes - initial_changes
+        
+        print(f"-> Se insertaron o actualizaron {registros_afectados} registros.")
+        print(f"-> {len(df) - registros_afectados} registros no sufrieron cambios (eran idénticos).")
+
     except Exception as e:
+        conn.rollback()
         print(f"Ocurrió un error durante la importación de datos: {e}")
     finally:
-        # Cerramos la conexión a la base de datos
         conn.close()
         print("-> Conexión con la base de datos cerrada.")
 
-    print("\n¡Proceso de importación a la base de datos completado!")
+    print(f"\n¡Proceso de importación para la tabla '{table_name}' completado!")
 
 if __name__ == '__main__':
-    # --- Configuración ---
-    # Asume que este script está en una carpeta y 'data' está al mismo nivel.
-    # ej: MI_PROYECTO/
-    #     ├── data/
-    #     │   └── Grado_pregrado_procesado.csv
-    #     └── database_scripts/
-    #         └── importador_db.py (este script)
-    
-    #csv_input_path = 'data/procesados/Grado_pregrado_procesado.csv'
-    #db_output_path = 'data/base_de_datos/academica.db' # El archivo de la base de datos
-    
+    # Usamos las rutas relativas desde la raíz del proyecto
     csv_input_path = 'data/procesados/CPU_procesados.csv'
-    db_output_path = 'data/base_de_datos/academicas.db' # El archivo de la base de datos
-    
-    crear_e_importar_alumnos(csv_input_path, db_output_path, 'aspirantes')
+    db_output_path = 'data/base_de_datos/academica.db'
+    importar_estudiantes(csv_input_path, db_output_path, 'aspirantes')
+

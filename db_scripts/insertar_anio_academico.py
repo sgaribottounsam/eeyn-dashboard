@@ -1,10 +1,11 @@
 import sqlite3
 import os
+from datetime import date
 
 def poblar_anio_academico(start_year, end_year, db_filepath, table_name='anio_academico'):
     """
     Genera los años académicos y los inserta directamente en la base de datos,
-    creando la tabla si es necesario y evitando duplicados.
+    usando el tipo de dato DATE para las fechas.
 
     Args:
         start_year (int): El primer año a generar.
@@ -14,11 +15,12 @@ def poblar_anio_academico(start_year, end_year, db_filepath, table_name='anio_ac
     """
     print(f"Iniciando la carga de datos en la tabla '{table_name}'...")
 
-    # --- Paso 1: Generar los datos en memoria ---
+    # --- Paso 1: Generar los datos en memoria con formato de fecha correcto ---
     anios_data = []
     for anio in range(start_year, end_year + 1):
-        inicio = f"1/4/{anio}"
-        fin = f"31/3/{anio + 1}"
+        # Creamos las fechas de inicio y fin en formato YYYY-MM-DD
+        inicio = date(anio, 4, 1).strftime('%Y-%m-%d')
+        fin = date(anio + 1, 3, 31).strftime('%Y-%m-%d')
         anios_data.append((anio, inicio, fin))
     
     print(f"-> Se generaron {len(anios_data)} registros de años académicos en memoria.")
@@ -32,12 +34,12 @@ def poblar_anio_academico(start_year, end_year, db_filepath, table_name='anio_ac
         print(f"Ocurrió un error al conectar con la base de datos: {e}")
         return
 
-    # --- Paso 3: Crear la tabla con LLAVE PRIMARIA ---
+    # --- Paso 3: Crear la tabla con tipo de dato DATE ---
     create_table_query = f"""
     CREATE TABLE IF NOT EXISTS {table_name} (
         "anio" INTEGER PRIMARY KEY,
-        "inicio" TEXT NOT NULL,
-        "fin" TEXT NOT NULL
+        "inicio" DATE NOT NULL,
+        "fin" DATE NOT NULL
     );
     """
     try:
@@ -78,7 +80,14 @@ def poblar_anio_academico(start_year, end_year, db_filepath, table_name='anio_ac
 
     print("\n¡Proceso de carga de años académicos completado!")
 
-    
 
-db_output_path = 'data/base_de_datos/academica.db'  
-poblar_anio_academico(1994, 2050, db_output_path, 'anio_academico')   
+if __name__ == '__main__':
+    # --- Configuración ---
+    ANIO_INICIO = 1994
+    ANIO_FIN = 2050
+    
+    # Asume que este script se ejecuta desde la carpeta raíz del proyecto
+    db_output_path = 'data/base_de_datos/academica.db'
+    
+    poblar_anio_academico(ANIO_INICIO, ANIO_FIN, db_output_path)
+

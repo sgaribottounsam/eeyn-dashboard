@@ -1,137 +1,109 @@
-from dash import dcc, html, Input, Output, State, ctx
+from dash import dcc, html, Input, Output, State, ctx, dash
+import json
+
+# Importamos la instancia de la app
 from app import app
+# Importamos las funciones para cargar datos y crear gráficos
 from data.loader import (
     cargar_datos_egresados,
     cargar_egresados_tasa,
     cargar_kpis_egresados,
-    cargar_evolucion_egresados # <-- Importamos la nueva función de carga
+    cargar_evolucion_egresados
 )
 from graph_factory.factory import (
     crear_grafico_cantidad_graduados_por_plan,
     crear_grafico_tasa_graduacion,
     crear_grafico_duracion_carrera,
-    crear_grafico_evolucion_egresados # <-- Importamos la nueva función de gráfico
+    crear_grafico_evolucion_egresados
 )
 
-# --- Carga de datos ---
+# --- Carga de datos para la página ---
 df_egresados = cargar_datos_egresados()
 df_egresados_tasa = cargar_egresados_tasa()
 kpis_egr = cargar_kpis_egresados()
 kpi_names_egr = sorted(list(kpis_egr.keys())) if kpis_egr else []
-df_evolucion_egresados = cargar_evolucion_egresados() # <-- Cargamos los nuevos datos
+df_evolucion_egresados = cargar_evolucion_egresados()
 
-# --- Función de ayuda ---
-def create_kpi_card(card_id, initial_kpi_name, initial_kpi_value):
-    """Crea la estructura de una tarjeta KPI."""
+# --- Función de ayuda para crear tarjetas KPI ---
+def create_kpi_card(card_index, initial_kpi_name, initial_kpi_value):
+    """Crea la estructura de una tarjeta KPI con un botón de rotación."""
+    card_id = f"{card_index+1}-egr" # ID único para la página de egresados
     return html.Div([
         html.Div([
-            html.Button('⬅️', id=f'prev-btn-{card_id}', n_clicks=0, className='kpi-button'),
-        ], style={'display': 'inline-block', 'verticalAlign': 'middle'}),
-        html.Div([
-            html.H5(initial_kpi_name, id=f'kpi-title-{card_id}', style={'textAlign': 'center'}),
-            html.H3(initial_kpi_value, id=f'kpi-value-{card_id}', style={'textAlign': 'center'}),
-        ], style={'display': 'inline-block', 'width': 'calc(100% - 80px)', 'verticalAlign': 'middle'}),
-        html.Div([
-            html.Button('➡️', id=f'next-btn-{card_id}', n_clicks=0, className='kpi-button'),
-        ], style={'display': 'inline-block', 'verticalAlign': 'middle'}),
-    ], className="six columns kpi-card")
+            html.H5(initial_kpi_name, id=f'kpi-title-{card_id}'),
+            html.H2(initial_kpi_value, id=f'kpi-value-{card_id}'),
+            html.Button('↻', id={'type': 'kpi-change-btn-egr', 'index': card_index}, className='kpi-change-button')
+        ], className="kpi-content"),
+    ], className="three columns kpi-card-container")
 
-# --- Layout ---
+
+# --- Layout de la Página ---
+initial_indices = [(i % len(kpi_names_egr)) for i in range(4)] if kpi_names_egr else [0,0,0,0]
+
 layout = html.Div([
     html.H1("Análisis de Egresados"),
     html.H3("Indicadores Clave y Visualizaciones"),
-    html.Div([
-        create_kpi_card(
-            '1-egr',
-            kpi_names_egr[0] if kpi_names_egr else "No disponible",
-            kpis_egr.get(kpi_names_egr[0], 0) if kpis_egr else ""
-        ),
-        create_kpi_card(
-            '2-egr',
-            kpi_names_egr[1] if len(kpi_names_egr) > 1 else "No disponible",
-            kpis_egr.get(kpi_names_egr[1], 0) if len(kpi_names_egr) > 1 else ""
-        ),
-    ], className="row"),
-    html.Hr(),
+
+    # Fila de KPIs con 4 tarjetas
+    html.Div(id='kpi-row-egr', className="row", children=[
+        create_kpi_card(i, 
+                        kpi_names_egr[initial_indices[i]],
+                        kpis_egr.get(kpi_names_egr[initial_indices[i]], 0))
+        for i in range(4)
+    ]),
     
-    # --- Fila 1 de gráficos (CON EL NUEVO GRÁFICO) ---
-    html.Div([
-        # Columna 1: El nuevo gráfico de evolución de egresados
-        html.Div([
-            dcc.Graph(
-                figure=crear_grafico_evolucion_egresados(df_evolucion_egresados)
-            )
-        ], className="six columns"),
+    html.Hr(),
 
-        # Columna 2: Cantidad de graduados por plan
-        html.Div([
-            dcc.Graph(
-                figure=crear_grafico_cantidad_graduados_por_plan(df_egresados_tasa)
-            )
-        ], className="six columns"),
+    # Filas de gráficos
+    html.Div([
+        html.Div([dcc.Graph(figure=crear_grafico_evolucion_egresados(df_evolucion_egresados))], className="six columns"),
+        html.Div([dcc.Graph(figure=crear_grafico_cantidad_graduados_por_plan(df_egresados_tasa))], className="six columns"),
+    ], className="row"),
+    html.Div([
+        html.Div([dcc.Graph(figure=crear_grafico_tasa_graduacion(df_egresados_tasa))], className="six columns"),
+        html.Div([dcc.Graph(figure=crear_grafico_duracion_carrera(df_egresados))], className="six columns"),
     ], className="row"),
 
-    # --- Fila 2 de gráficos ---
-    html.Div([
-        # Columna 1: Tasa de graduación
-        html.Div([
-            dcc.Graph(
-                figure=crear_grafico_tasa_graduacion(df_egresados_tasa)
-            )
-        ], className="six columns"),
-
-        # Columna 2: Duración de la carrera
-        html.Div([
-            dcc.Graph(
-                figure=crear_grafico_duracion_carrera(df_egresados)
-            )
-        ], className="six columns"),
-    ], className="row"),
-
-    dcc.Store(id='kpi-index-1-egr', data=0),
-    dcc.Store(id='kpi-index-2-egr', data=1)
+    # Almacenamiento invisible para los índices de todos los KPIs
+    dcc.Store(id='kpi-indices-egr', data=initial_indices)
 ])
 
 # --- Callbacks ---
-@app.callback(
-    [Output('kpi-title-1-egr', 'children'),
-     Output('kpi-value-1-egr', 'children'),
-     Output('kpi-index-1-egr', 'data')],
-    [Input('prev-btn-1-egr', 'n_clicks'),
-     Input('next-btn-1-egr', 'n_clicks')],
-    [State('kpi-index-1-egr', 'data')]
-)
-def update_kpi_1_egr(prev_clicks, next_clicks, current_index):
-    if not kpi_names_egr: return "No disponible", "", 0
-    button_id = ctx.triggered_id
-    if button_id == 'prev-btn-1-egr':
-        new_index = (current_index - 1) % len(kpi_names_egr)
-    elif button_id == 'next-btn-1-egr':
-        new_index = (current_index + 1) % len(kpi_names_egr)
-    else:
-        new_index = current_index
-    kpi_name = kpi_names_egr[new_index]
-    kpi_value = kpis_egr[kpi_name]
-    return kpi_name, kpi_value, new_index
 
 @app.callback(
-    [Output('kpi-title-2-egr', 'children'),
-     Output('kpi-value-2-egr', 'children'),
-     Output('kpi-index-2-egr', 'data')],
-    [Input('prev-btn-2-egr', 'n_clicks'),
-     Input('next-btn-2-egr', 'n_clicks')],
-    [State('kpi-index-2-egr', 'data')]
+    [Output(f'kpi-title-{i+1}-egr', 'children') for i in range(4)] +
+    [Output(f'kpi-value-{i+1}-egr', 'children') for i in range(4)] +
+    [Output('kpi-indices-egr', 'data')],
+    [Input({'type': 'kpi-change-btn-egr', 'index': i}, 'n_clicks') for i in range(4)],
+    [State('kpi-indices-egr', 'data')],
+    prevent_initial_call=True
 )
-def update_kpi_2_egr(prev_clicks, next_clicks, current_index):
-    if len(kpi_names_egr) < 2: return "No disponible", "", 1
-    button_id = ctx.triggered_id
-    if button_id == 'prev-btn-2-egr':
-        new_index = (current_index - 1) % len(kpi_names_egr)
-    elif button_id == 'next-btn-2-egr':
-        new_index = (current_index + 1) % len(kpi_names_egr)
-    else:
-        new_index = current_index
-    kpi_name = kpi_names_egr[new_index]
-    kpi_value = kpis_egr[kpi_name]
-    return kpi_name, kpi_value, new_index
+def update_all_kpis_egr(n0, n1, n2, n3, current_indices):
+    if not kpi_names_egr:
+        return [dash.no_update] * 9
+
+    triggered_prop_id = ctx.triggered[0]['prop_id']
+    button_id_dict = json.loads(triggered_prop_id.split('.')[0])
+    card_to_change_index = button_id_dict['index']
+    
+    all_kpi_indices = set(range(len(kpi_names_egr)))
+    used_indices = set(current_indices)
+    
+    if all_kpi_indices.issubset(used_indices):
+        return [dash.no_update] * 9
+
+    new_kpi_index = current_indices[card_to_change_index]
+    
+    while True:
+        new_kpi_index = (new_kpi_index + 1) % len(kpi_names_egr)
+        if new_kpi_index not in used_indices:
+            break
+            
+    new_indices = current_indices[:]
+    new_indices[card_to_change_index] = new_kpi_index
+    
+    new_titles = [kpi_names_egr[i] for i in new_indices]
+    new_values = [kpis_egr.get(kpi, 0) for kpi in new_titles]
+    
+    return new_titles + new_values + [new_indices]
 

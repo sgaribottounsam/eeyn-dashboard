@@ -43,7 +43,6 @@ initial_indices = [(i % len(kpi_names_insc)) for i in range(4)] if kpi_names_ins
 
 layout = html.Div([
     html.H1("Inscripción a materias"),
-    html.H3("Segundo cuatrimestre 2025"),
     html.Div(id='kpi-row-insc', className="row", children=[
         create_kpi_card(i, 
                         kpi_names_insc[initial_indices[i]],

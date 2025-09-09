@@ -41,8 +41,7 @@ def create_kpi_card(card_index, initial_kpi_name, initial_kpi_value):
 initial_indices = [(i % len(kpi_names_egr)) for i in range(4)] if kpi_names_egr else [0,0,0,0]
 
 layout = html.Div([
-    html.H1("Análisis de Egresados"),
-    html.H3("Indicadores Clave y Visualizaciones"),
+    html.H1("Egresados"),
 
     # Fila de KPIs con 4 tarjetas
     html.Div(id='kpi-row-egr', className="row", children=[

@@ -1,9 +1,10 @@
+import pandas as pd
 import plotly.express as px
 
 # --- CONFIGURACIÓN DE COLORES ---
 COLORES_CARRERAS = {
-    'CP': '#5dae8b', 'LAGE': '#f6f49d', 'LECO': '#ff7676',
-    'LEDC': '#FF8C00', 'LTUR': '#466c95', 'MPCC': '#c5705d',
+    'CP-CCCP-PC': '#5dae8b', 'LI-LAGE-P': '#f6f49d', 'LI-LECO-P': '#ff7676',
+    'LEDC': '#FF8C00', 'LI-LTUR-P': '#466c95', 'MPCC': '#c5705d',
     'GUIA': '#8B4513', 'CPU': '#8200e1'
 }
 
@@ -17,7 +18,6 @@ def darken_color(hex_color, factor=0.7):
     return f"#{dark_rgb[0]:02x}{dark_rgb[1]:02x}{dark_rgb[2]:02x}"
 
 # --- Funciones de Gráficos ---
-# Todas las funciones que crean figuras de Plotly están aquí.
 
 def crear_grafico_vacio(titulo="Datos no disponibles"):
     fig = px.bar()
@@ -33,6 +33,56 @@ def crear_grafico_vacio(titulo="Datos no disponibles"):
         height=400
     )
     return fig
+
+# --- NUEVA FUNCIÓN PARA EL GRÁFICO DE EGRESADOS POR AÑO ---
+def crear_grafico_egresados_por_anio(df):
+    """
+    Crea un gráfico de barras apiladas de egresados por año, desglosado por carrera.
+    """
+    if df.empty:
+        return crear_grafico_vacio("Egresados por Año Académico")
+
+    # El CSV está en formato "ancho". Lo transformamos a formato "largo".
+    # Columnas de años a procesar
+    columnas_anios = [col for col in df.columns if col.isdigit()]
+    
+    df_largo = df.melt(
+        id_vars=['Carrera'],
+        value_vars=columnas_anios,
+        var_name='anio_academico',
+        value_name='cantidad_egresados'
+    )
+    # Renombramos 'Carrera' para mantener consistencia
+    df_largo.rename(columns={'Carrera': 'carrera'}, inplace=True)
+    
+    # Nos aseguramos de que no grafique la fila de "Total Grado" si existe
+    df_largo = df_largo[df_largo['carrera'] != 'Total Grado']
+
+    # Creamos el gráfico de barras apiladas
+    fig = px.bar(
+        df_largo,
+        x='anio_academico',
+        y='cantidad_egresados',
+        color='carrera',
+        title='🎓 Egresados por Año Académico',
+        labels={
+            'anio_academico': 'Año Académico',
+            'cantidad_egresados': 'Cantidad de Egresados',
+            'carrera': 'Carrera'
+        },
+        color_discrete_map=COLORES_CARRERAS
+    )
+
+    fig.update_layout(
+        height=400,
+        xaxis_title="Año Académico",
+        yaxis_title="Cantidad de Egresados",
+        plot_bgcolor='white',
+        barmode='stack', # Aseguramos que las barras estén apiladas
+        legend_title_text='Carrera'
+    )
+    return fig
+
 
 def crear_grafico_estudiantes_por_carrera(df_evolucion, filtro_tipo):
     if df_evolucion.empty: return crear_grafico_vacio(f"Estudiantes por Carrera 2025 ({filtro_tipo})")
@@ -132,4 +182,3 @@ def crear_grafico_duracion_carrera(df):
     fig.update_traces(texttemplate='%{text:.1f} años', textposition='outside')
     fig.update_layout(height=400, xaxis_title="Duración promedio en años", yaxis_title=None, plot_bgcolor='white', showlegend=False, margin=dict(l=20, r=20, t=40, b=20))
     return fig
-

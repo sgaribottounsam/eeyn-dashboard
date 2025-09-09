@@ -3,19 +3,12 @@ import os
 
 # --- Path a la Carpeta de Datos (Método Robusto) ---
 # 1. Obtenemos la ruta absoluta del directorio donde está ESTE archivo (loader.py).
-#    Ej: C:/.../MI_PROYECTO_COMPLETO/dash_dashboard/data
 current_file_dir = os.path.dirname(os.path.abspath(__file__))
-
 # 2. Subimos un nivel para llegar a la carpeta de la app (dash_dashboard).
-#    Ej: C:/.../MI_PROYECTO_COMPLETO/dash_dashboard
 app_dir = os.path.dirname(current_file_dir)
-
 # 3. Subimos otro nivel para llegar a la raíz del proyecto grande.
-#    Ej: C:/.../MI_PROYECTO_COMPLETO
 project_root = os.path.dirname(app_dir)
-
 # 4. Construimos la ruta a la carpeta _output desde la raíz del proyecto.
-#    Esta ruta será absoluta y funcionará siempre, sin importar desde dónde se ejecute el script.
 DATA_PATH = os.path.join(project_root, "_output")
 
 
@@ -27,7 +20,40 @@ SUB_PATHS = {
 
 
 # --- Carga de Datos ---
-# El resto de las funciones no necesita cambios. Usarán la nueva DATA_PATH.
+
+def cargar_egresados_por_anio():
+    """Carga el archivo CSV con el resumen de egresados por año y carrera."""
+    try:
+        folder = SUB_PATHS["egresados"]
+        file_path = os.path.join(DATA_PATH, folder, 'Egresados_anio_egreso.csv')
+        df = pd.read_csv(file_path, encoding='utf-8')
+        print(f"-> Archivo Egresados_anio_egreso.csv cargado correctamente.")
+        return df
+    except FileNotFoundError:
+        print(f"Advertencia: No se encontró el archivo en {file_path}")
+        return pd.DataFrame()
+
+def cargar_kpis_inscripciones():
+    """Carga los KPIs desde el archivo CSV de inscripciones."""
+    try:
+        folder = SUB_PATHS["insc_materias"]
+        file_path = os.path.join(DATA_PATH, folder, 'KPI_insc_materias.csv')
+        df_kpi = pd.read_csv(file_path, header=None, names=['Indicador', 'Valor'], decimal=',')
+        return {row['Indicador']: row['Valor'] for _, row in df_kpi.iterrows()}
+    except FileNotFoundError:
+        print(f"Advertencia: No se encontró el archivo en {file_path}")
+        return {}
+
+def cargar_kpis_egresados():
+    """Carga los KPIs desde el archivo CSV de egresados."""
+    try:
+        folder = SUB_PATHS["egresados"]
+        file_path = os.path.join(DATA_PATH, folder, 'Egresados_KPI.csv')
+        df_kpi = pd.read_csv(file_path, encoding='utf-8', header=None, names=['Indicador', 'Valor'], decimal=',')
+        return {row['Indicador']: row['Valor'] for _, row in df_kpi.iterrows()}
+    except FileNotFoundError:
+        print(f"Advertencia: No se encontró el archivo en {file_path}")
+        return {}
 
 def cargar_evolucion_todas():
     try:
@@ -80,18 +106,6 @@ def cargar_datos_egresados():
     except FileNotFoundError:
         print(f"Advertencia: No se encontró el archivo en {file_path}")
         return pd.DataFrame()
-    
-def cargar_kpis_inscripciones():
-    """Carga los KPIs desde el archivo CSV de inscripciones."""
-    try:
-        folder = SUB_PATHS["insc_materias"]
-        file_path = os.path.join(DATA_PATH, folder, 'KPI_insc_materias.csv')
-        df_kpi = pd.read_csv(file_path, header=None, names=['Indicador', 'Valor'], decimal=',')
-        # Convertimos el DataFrame a un diccionario para fácil acceso
-        return {row['Indicador']: row['Valor'] for _, row in df_kpi.iterrows()}
-    except FileNotFoundError:
-        print(f"Advertencia: No se encontró el archivo en {file_path}")
-        return {}
 
 def cargar_egresados_2024():
     try:
@@ -115,13 +129,3 @@ def cargar_egresados_tasa():
         print(f"Advertencia: No se encontró el archivo en {file_path}")
         return pd.DataFrame()
 
-def cargar_kpis_egresados():
-    """Carga los KPIs desde el archivo CSV de egresados."""
-    try:
-        folder = SUB_PATHS["egresados"]
-        file_path = os.path.join(DATA_PATH, folder, 'Egresados_KPI.csv')
-        df_kpi = pd.read_csv(file_path, encoding='utf-8', header=None, names=['Indicador', 'Valor'], decimal=',')
-        return {row['Indicador']: row['Valor'] for _, row in df_kpi.iterrows()}
-    except FileNotFoundError:
-        print(f"Advertencia: No se encontró el archivo en {file_path}")
-        return {}

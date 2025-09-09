@@ -1,7 +1,3 @@
-/*SELECT * FROM anio_academico;
-/*SELECT DISTINCT Tipo_de_Certificado
-FROM certificados*/
-/*
 WITH egresados_grado AS (
     SELECT DISTINCT eg.documento, 
         eg.fecha_ingreso, 
@@ -20,7 +16,3 @@ SELECT e.Propuesta, e.Plan, COUNT(DISTINCT e.Documento) AS cantidad
 FROM egresados_grado AS e
 GROUP BY e.Propuesta, e.Plan
 */
-
-SELECT DISTINCT e.Propuesta, e.plan
-FROM egresados AS e
-ORDER BY e.Propuesta

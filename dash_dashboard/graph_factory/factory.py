@@ -1,11 +1,17 @@
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go # <-- Importamos graph_objects
 
 # --- CONFIGURACIÓN DE COLORES ---
 COLORES_CARRERAS = {
-    'CP-CCCP-PC': '#5dae8b', 'LI-LAGE-P': '#f6f49d', 'LI-LECO-P': '#ff7676',
-    'LEDC': '#FF8C00', 'LI-LTUR-P': '#466c95', 'MPCC': '#c5705d',
-    'GUIA': '#8B4513', 'CPU': '#8200e1'
+    'CP-CCCP-PC': '#5dae8b',
+    'LI-LAGE-P': '#f6f49d',
+    'LI-LECO-P': '#ff7676',
+    'LI-LEDC-P': '#FF8C00',
+    'LI-LTUR-P': '#466c95',
+    'TE-MPCO-P': '#c5705d',
+    'TE-GUIA-P': '#8B4513',
+    'CI-EEYN-P': '#8200e1'
 }
 
 # --- Funciones de Utilidad ---
@@ -34,52 +40,60 @@ def crear_grafico_vacio(titulo="Datos no disponibles"):
     )
     return fig
 
-# --- NUEVA FUNCIÓN PARA EL GRÁFICO DE EGRESADOS POR AÑO ---
-def crear_grafico_egresados_por_anio(df):
+# --- FUNCIÓN CORREGIDA PARA EL GRÁFICO DE EVOLUCIÓN DE EGRESADOS ---
+def crear_grafico_evolucion_egresados(df):
     """
-    Crea un gráfico de barras apiladas de egresados por año, desglosado por carrera.
+    Crea un gráfico de barras apiladas de egresados por año, con etiquetas de total acumulado.
     """
     if df.empty:
-        return crear_grafico_vacio("Egresados por Año Académico")
+        return crear_grafico_vacio("Evolución de Egresados por Año")
 
-    # El CSV está en formato "ancho". Lo transformamos a formato "largo".
-    # Columnas de años a procesar
-    columnas_anios = [col for col in df.columns if col.isdigit()]
-    
-    df_largo = df.melt(
-        id_vars=['Carrera'],
-        value_vars=columnas_anios,
-        var_name='anio_academico',
-        value_name='cantidad_egresados'
-    )
-    # Renombramos 'Carrera' para mantener consistencia
-    df_largo.rename(columns={'Carrera': 'carrera'}, inplace=True)
-    
-    # Nos aseguramos de que no grafique la fila de "Total Grado" si existe
-    df_largo = df_largo[df_largo['carrera'] != 'Total Grado']
+    # Agrupamos los datos para sumar las cantidades por año y propuesta.
+    df_agrupado = df.groupby(['anio_academico', 'propuesta'])['cantidad'].sum().reset_index()
+    df_agrupado['anio_academico'] = df_agrupado['anio_academico'].astype(str)
 
-    # Creamos el gráfico de barras apiladas
+    # Calculamos el total para cada año académico, que usaremos para las etiquetas.
+    df_totales = df_agrupado.groupby('anio_academico')['cantidad'].sum().reset_index()
+
+    # 1. Creamos el gráfico de barras apiladas base.
     fig = px.bar(
-        df_largo,
+        df_agrupado,
         x='anio_academico',
-        y='cantidad_egresados',
-        color='carrera',
-        title='🎓 Egresados por Año Académico',
+        y='cantidad',
+        color='propuesta',
+        title='🎓 Evolución de Egresados por Año Académico',
         labels={
             'anio_academico': 'Año Académico',
-            'cantidad_egresados': 'Cantidad de Egresados',
-            'carrera': 'Carrera'
+            'cantidad': 'Cantidad de Egresados',
+            'propuesta': 'Carrera'
         },
         color_discrete_map=COLORES_CARRERAS
     )
+
+    # 2. Añadimos una traza de 'scatter' invisible que SÓLO muestra el texto con los totales.
+    # Este método es mucho más robusto que las anotaciones.
+    fig.add_trace(go.Scatter(
+        x=df_totales['anio_academico'],
+        y=df_totales['cantidad'],
+        text=df_totales['cantidad'],
+        mode='text',
+        textposition='top center',
+        textfont=dict(
+            color='black',
+            size=11
+        ),
+        showlegend=False
+    ))
 
     fig.update_layout(
         height=400,
         xaxis_title="Año Académico",
         yaxis_title="Cantidad de Egresados",
         plot_bgcolor='white',
-        barmode='stack', # Aseguramos que las barras estén apiladas
-        legend_title_text='Carrera'
+        barmode='stack',
+        legend_title_text='Carrera',
+        # Aumentamos el rango del eje Y para que las etiquetas quepan bien
+        yaxis_range=[0, df_totales['cantidad'].max() * 1.15]
     )
     return fig
 
@@ -182,3 +196,4 @@ def crear_grafico_duracion_carrera(df):
     fig.update_traces(texttemplate='%{text:.1f} años', textposition='outside')
     fig.update_layout(height=400, xaxis_title="Duración promedio en años", yaxis_title=None, plot_bgcolor='white', showlegend=False, margin=dict(l=20, r=20, t=40, b=20))
     return fig
+

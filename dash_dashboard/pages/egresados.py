@@ -2,26 +2,23 @@ from dash import dcc, html, Input, Output, State, ctx
 from app import app
 from data.loader import (
     cargar_datos_egresados,
-    cargar_egresados_2024,
     cargar_egresados_tasa,
     cargar_kpis_egresados,
-    cargar_egresados_por_anio # <-- Importamos la nueva función
+    cargar_evolucion_egresados # <-- Importamos la nueva función de carga
 )
 from graph_factory.factory import (
-    crear_grafico_egresados_2024,
     crear_grafico_cantidad_graduados_por_plan,
     crear_grafico_tasa_graduacion,
     crear_grafico_duracion_carrera,
-    crear_grafico_egresados_por_anio # <-- Importamos la nueva función
+    crear_grafico_evolucion_egresados # <-- Importamos la nueva función de gráfico
 )
 
 # --- Carga de datos ---
 df_egresados = cargar_datos_egresados()
-df_egresados_2024 = cargar_egresados_2024()
 df_egresados_tasa = cargar_egresados_tasa()
 kpis_egr = cargar_kpis_egresados()
 kpi_names_egr = sorted(list(kpis_egr.keys())) if kpis_egr else []
-df_egresados_anio = cargar_egresados_por_anio() # <-- Cargamos los nuevos datos
+df_evolucion_egresados = cargar_evolucion_egresados() # <-- Cargamos los nuevos datos
 
 # --- Función de ayuda ---
 def create_kpi_card(card_id, initial_kpi_name, initial_kpi_value):
@@ -47,7 +44,7 @@ layout = html.Div([
         create_kpi_card(
             '1-egr',
             kpi_names_egr[0] if kpi_names_egr else "No disponible",
-            kpis_egr.get(kpi_names_egr[0], 0) if kpi_names_egr else ""
+            kpis_egr.get(kpi_names_egr[0], 0) if kpis_egr else ""
         ),
         create_kpi_card(
             '2-egr',
@@ -59,48 +56,36 @@ layout = html.Div([
     
     # --- Fila 1 de gráficos (CON EL NUEVO GRÁFICO) ---
     html.Div([
-        # Columna 1: El nuevo gráfico de egresados por año
+        # Columna 1: El nuevo gráfico de evolución de egresados
         html.Div([
             dcc.Graph(
-                figure=crear_grafico_egresados_por_anio(df_egresados_anio)
+                figure=crear_grafico_evolucion_egresados(df_evolucion_egresados)
             )
         ], className="six columns"),
 
-        # Columna 2: Egresados por carrera en 2024
+        # Columna 2: Cantidad de graduados por plan
         html.Div([
             dcc.Graph(
-                figure=crear_grafico_egresados_2024(df_egresados_2024)
+                figure=crear_grafico_cantidad_graduados_por_plan(df_egresados_tasa)
             )
         ], className="six columns"),
     ], className="row"),
 
     # --- Fila 2 de gráficos ---
     html.Div([
-        # Columna 1: Cantidad de graduados por plan
-        html.Div([
-            dcc.Graph(
-                figure=crear_grafico_cantidad_graduados_por_plan(df_egresados_tasa)
-            )
-        ], className="six columns"),
-
-        # Columna 2: Tasa de graduación
+        # Columna 1: Tasa de graduación
         html.Div([
             dcc.Graph(
                 figure=crear_grafico_tasa_graduacion(df_egresados_tasa)
             )
         ], className="six columns"),
-    ], className="row"),
-    
-    # --- Fila 3 de gráficos ---
-    html.Div([
-        # Columna 1: Duración de carrera
+
+        # Columna 2: Duración de la carrera
         html.Div([
             dcc.Graph(
                 figure=crear_grafico_duracion_carrera(df_egresados)
             )
         ], className="six columns"),
-        # Columna 2: Vacía por ahora
-        html.Div([], className="six columns")
     ], className="row"),
 
     dcc.Store(id='kpi-index-1-egr', data=0),

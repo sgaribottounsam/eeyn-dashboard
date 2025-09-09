@@ -21,13 +21,13 @@ SUB_PATHS = {
 
 # --- Carga de Datos ---
 
-def cargar_egresados_por_anio():
-    """Carga el archivo CSV con el resumen de egresados por año y carrera."""
+def cargar_evolucion_egresados():
+    """Carga el archivo CSV con el detalle de egresados por año, carrera y plan."""
     try:
         folder = SUB_PATHS["egresados"]
-        file_path = os.path.join(DATA_PATH, folder, 'Egresados_anio_egreso.csv')
+        file_path = os.path.join(DATA_PATH, folder, 'Egresados_anio_egreso_carrera.csv')
         df = pd.read_csv(file_path, encoding='utf-8')
-        print(f"-> Archivo Egresados_anio_egreso.csv cargado correctamente.")
+        print(f"-> Archivo Egresados_anio_egreso_carrera.csv cargado correctamente.")
         return df
     except FileNotFoundError:
         print(f"Advertencia: No se encontró el archivo en {file_path}")

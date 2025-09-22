@@ -1,4 +1,6 @@
-WITH egresados_grado AS (
+SELECT * FROM inscripciones_cursadas
+
+/*WITH egresados_grado AS (
     SELECT DISTINCT eg.documento, 
         eg.fecha_ingreso, 
         eg.fecha_egreso, 

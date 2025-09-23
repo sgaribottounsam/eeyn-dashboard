@@ -1,30 +1,25 @@
 import pandas as pd
 import re
 import os
+import argparse
 
 # --- Configuración del script ---
 
 # Archivo con la lista de carreras válidas
 CARRERAS_FILE = 'data/procesados/carreras.csv'
-# Archivo crudo de inscripciones
-INSCRIPCIONES_FILE = 'data/crudos/inscripciones.xlsx'
-# Archivo de salida para los datos procesados
-OUTPUT_FILE = 'data/procesados/inscripciones_procesado.csv'
-
-# Define el período a agregar a los datos
-PERIODO_VALUE = '2025-2'
 # Define los ESTADOS a buscar. El filtro buscará si el estado CONTIENE estas palabras.
 ESTADOS_UTILES = ['Aceptada', 'Pendiente', 'Rechazada']
 
-def limpiar_y_procesar_datos():
+def limpiar_y_procesar_datos(inscripciones_file, output_file, periodo_value):
     """
     Función principal para leer, limpiar y enriquecer los datos de inscripciones.
     Valida las carreras contra el archivo carreras.csv.
     """
     print("Iniciando el proceso de limpieza y enriquecimiento de datos...")
 
-    if not os.path.exists(INSCRIPCIONES_FILE) or not os.path.exists(CARRERAS_FILE):
+    if not os.path.exists(inscripciones_file) or not os.path.exists(CARRERAS_FILE):
         print(f"Error: No se encontró uno de los archivos de entrada. Verifica las rutas.")
+        print(f"Buscando: {inscripciones_file} y {CARRERAS_FILE}")
         return
 
     # --- Paso 1: Leer el archivo de carreras para validación ---
@@ -38,7 +33,7 @@ def limpiar_y_procesar_datos():
 
     # --- Paso 2: Procesar el archivo de inscripciones ---
     try:
-        df_inscripciones = pd.read_excel(INSCRIPCIONES_FILE, header=None)
+        df_inscripciones = pd.read_excel(inscripciones_file, header=None)
         
         datos_limpios = []
         current_carrera_code = None
@@ -67,7 +62,7 @@ def limpiar_y_procesar_datos():
                     'Estado Insc.': row.iloc[4],   # Estado Insc. está en la 5ta columna (índice 4)
                     'Fecha inscripción': row.iloc[6], # Fecha inscripción está en la 7ma columna (índice 6)
                     'Carrera': current_carrera_code,
-                    'Período': PERIODO_VALUE
+                    'Período': periodo_value
                 })
         
         if not datos_limpios:
@@ -86,14 +81,21 @@ def limpiar_y_procesar_datos():
         columnas_finales = ['Alumno', 'Identificación', 'Comisión', 'Estado Insc.', 'Fecha inscripción', 'Carrera', 'Período']
         df_final = df_filtrado[columnas_finales]
 
-        os.makedirs(os.path.dirname(OUTPUT_FILE), exist_ok=True)
-        df_final.to_csv(OUTPUT_FILE, index=False, encoding='utf-8')
-        print(f"Proceso finalizado. Archivo limpio guardado como '{OUTPUT_FILE}'.")
+        os.makedirs(os.path.dirname(output_file), exist_ok=True)
+        df_final.to_csv(output_file, index=False, encoding='utf-8')
+        print(f"Proceso finalizado. Archivo limpio guardado como '{output_file}'.")
 
     except Exception as e:
         print(f"Error al procesar el archivo de inscripciones: {e}")
         return
 
 if __name__ == '__main__':
-    limpiar_y_procesar_datos()
+    parser = argparse.ArgumentParser(description='Limpia y procesa archivos de inscripciones a cursadas.')
+    parser.add_argument('--periodo', required=True, help='El período lectivo a asignar a los registros (ej: 2025-1).')
+    parser.add_argument('--archivo-entrada', required=True, help='Ruta al archivo Excel de inscripciones crudo.')
+    parser.add_argument('--archivo-salida', required=True, help='Ruta donde se guardará el archivo CSV procesado.')
+    
+    args = parser.parse_args()
+    
+    limpiar_y_procesar_datos(args.archivo_entrada, args.archivo_salida, args.periodo)
 

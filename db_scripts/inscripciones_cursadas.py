@@ -2,6 +2,7 @@ import pandas as pd
 import sqlite3
 import os
 import re
+import argparse
 
 def to_snake_case(name):
     """Convierte un string a formato snake_case, manejando acentos y caracteres comunes."""
@@ -105,8 +106,13 @@ def importar_inscripciones(csv_filepath, db_filepath, table_name='inscripciones_
     print(f"\n¡Proceso de importación para la tabla '{table_name}' completado!")
 
 if __name__ == '__main__':
-    csv_input_path = 'data/procesados/inscripciones_procesado.csv'
+    parser = argparse.ArgumentParser(description='Importa un CSV de inscripciones a la base de datos SQLite.')
+    parser.add_argument('--archivo-csv', required=True, help='Ruta al archivo CSV procesado para importar.')
+    
+    args = parser.parse_args()
+
+    # La ruta a la base de datos puede seguir siendo fija si siempre es la misma.
     db_output_path = 'data/base_de_datos/academica.db'
     
-    importar_inscripciones(csv_input_path, db_output_path, strategy='REPLACE')
+    importar_inscripciones(args.archivo_csv, db_output_path, strategy='REPLACE')
 

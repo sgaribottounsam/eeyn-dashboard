@@ -7,6 +7,18 @@ Crear una aplicación web simple y segura que permita a un asistente administrat
 Para esta tarea específica, recomiendo utilizar Streamlit.
 
     ¿Por qué Streamlit y no Dash? Mientras que Dash es excelente para dashboards de visualización complejos, Streamlit brilla por su simplicidad y velocidad de desarrollo para herramientas internas y aplicaciones orientadas a procesos. La cantidad de código necesaria para construir esta interfaz en Streamlit será significativamente menor y más fácil de mantener que su equivalente en Dash. Podemos crear un script admin_uploader.py completamente separado de tu proyecto de dashboard.
+Estructura de Carpetas Propuesta
+
+Para mantener la separación de responsabilidades, la nueva herramienta de carga viviría en su propia carpeta, al mismo nivel que dash_dashboard.
+
+MI_PROYECTO_RAIZ/
+├── data/
+├── limpiadores/
+├── db_scripts/
+├── dash_dashboard/
+└── admin_tools/
+    └── uploader_app.py   # La nueva app de Streamlit
+
 
 3. Especificaciones Funcionales (La Interfaz)
 

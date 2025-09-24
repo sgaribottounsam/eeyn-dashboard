@@ -3,6 +3,7 @@ import pandas as pd
 import subprocess
 import os
 import datetime
+import sqlite3
 
 # --- Configuración de la App ---
 st.set_page_config(page_title="Cargador de Datos Académicos", layout="centered")
@@ -57,6 +58,28 @@ def ejecutar_proceso(comando):
     else:
         st.error(f"El script finalizó con un error (código: {process.returncode}).")
         return False, stderr_output
+
+def mostrar_resumen_inscripciones():
+    """Consulta la base de datos y muestra un resumen de las inscripciones por período."""
+    st.subheader("Resumen de Inscripciones a Cursadas por Período")
+    try:
+        db_path = os.path.join(BASE_DIR, 'data', 'base_de_datos', 'academica.db')
+        conn = sqlite3.connect(db_path)
+        
+        query = "SELECT periodo, COUNT(*) as total FROM inscripciones_cursadas GROUP BY periodo ORDER BY periodo DESC"
+        df = pd.read_sql_query(query, conn)
+        
+        conn.close()
+        
+        if not df.empty:
+            st.write("Total de inscripciones por período en la base de datos:")
+            # Usar st.dataframe para una mejor visualización
+            st.dataframe(df.rename(columns={'periodo': 'Período', 'total': 'Total Inscripciones'}).set_index('Período'))
+        else:
+            st.info("No hay datos de inscripciones en la base de datos para mostrar.")
+            
+    except Exception as e:
+        st.error(f"Ocurrió un error al consultar la base de datos: {e}")
 
 # --- Interfaz de Usuario ---
 st.title("Herramienta de Carga de Datos Académicos")
@@ -132,6 +155,7 @@ if st.button("Procesar y Cargar Datos"):
                 st.balloons()
                 st.success("¡Proceso completado con éxito!")
                 st.info(f"Resumen de la importación:\n{out_importacion}")
+                mostrar_resumen_inscripciones()
         else:
             st.error("El proceso se detuvo debido a un error en el script de limpieza.")
 

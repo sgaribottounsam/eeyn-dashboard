@@ -185,3 +185,42 @@ def crear_grafico_duracion_carrera(df):
     fig.update_layout(height=GRAPH_HEIGHT, xaxis_title="Duración promedio en años", yaxis_title=None, plot_bgcolor='white', showlegend=False, margin=dict(l=20, r=20, t=40, b=20))
     return fig
 
+# --- Gráficos para la página de Inscripciones a Carreras ---
+
+def crear_grafico_evolucion_inscriptos_diarios(df):
+    """Crea un gráfico de líneas con la evolución de inscriptos por día."""
+    if df.empty:
+        return crear_grafico_vacio("Evolución de Inscriptos por Día")
+    
+    fig = px.line(df, x='fecha_insc', y='cantidad', title='📈 Evolución de Inscriptos por Día',
+                  labels={'fecha_insc': 'Fecha', 'cantidad': 'Inscriptos'}, markers=True)
+    fig.update_layout(height=GRAPH_HEIGHT, plot_bgcolor='white')
+    return fig
+
+def crear_grafico_comparativa_inscriptos_carrera(df):
+    """Crea un gráfico de barras agrupadas para comparar preinscriptos e inscriptos por carrera."""
+    if df.empty:
+        return crear_grafico_vacio("Comparativa Inscriptos vs. Preinscriptos")
+
+    df_melted = df.melt(id_vars='carrera', value_vars=['preinscriptos', 'inscriptos'],
+                        var_name='tipo', value_name='cantidad')
+
+    fig = px.bar(df_melted, x='carrera', y='cantidad', color='tipo', barmode='group',
+                 title='👥 Comparativa Inscriptos vs. Preinscriptos por Carrera',
+                 labels={'carrera': 'Carrera', 'cantidad': 'Cantidad', 'tipo': 'Estado'},
+                 text='cantidad')
+    fig.update_traces(textposition='outside')
+    fig.update_layout(height=GRAPH_HEIGHT, plot_bgcolor='white')
+    return fig
+
+def crear_grafico_distribucion_preinscriptos_estado(df):
+    """Crea un gráfico de torta para ver la distribución de preinscriptos por estado."""
+    if df.empty:
+        return crear_grafico_vacio("Distribución de Preinscriptos por Estado")
+
+    fig = px.pie(df, names='estado', values='cantidad', 
+                 title='📊 Distribución de Preinscriptos por Estado',
+                 hole=0.3)
+    fig.update_traces(textposition='inside', textinfo='percent+label')
+    fig.update_layout(height=GRAPH_HEIGHT, showlegend=False)
+    return fig

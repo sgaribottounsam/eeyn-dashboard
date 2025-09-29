@@ -7,7 +7,7 @@ from app import app
 from app import server
 
 # Paso 2: Importar los layouts de nuestras páginas.
-from pages import inscripciones_materias, egresados
+from pages import inscripciones_materias, egresados, inscripciones_carreras
 
 # --- Estilos Dinámicos ---
 # Estilo de la barra lateral cuando está ABIERTA
@@ -48,6 +48,7 @@ sidebar = html.Div(
         # Eliminamos el logo de aquí
         html.H4("Menú", style={'margin-top':'40px'}),
         dcc.Link('👨‍🎓 Inscripciones a Materias', href='/inscripciones-materias', style={'display': 'block', 'margin': '5px'}),
+        dcc.Link('🚀 Inscripciones a Carreras', href='/inscripciones-carreras', style={'display': 'block', 'margin': '5px'}),
         dcc.Link('🎓 Egresados', href='/egresados', style={'display': 'block', 'margin': '5px'}),
         html.Hr(style={'borderColor': 'white'}),
         html.P("Período: Segundo Cuatrimestre 2025", style={'fontSize': '14px'}),
@@ -130,6 +131,8 @@ def toggle_sidebar(n, data):
 def display_page(pathname):
     if pathname == '/egresados':
         return egresados.layout
+    elif pathname == '/inscripciones-carreras':
+        return inscripciones_carreras.layout
     else:
         return inscripciones_materias.layout
 

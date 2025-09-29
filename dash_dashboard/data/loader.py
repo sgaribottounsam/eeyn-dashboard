@@ -15,7 +15,8 @@ DATA_PATH = os.path.join(project_root, "_output")
 # --- Configuración de Sub-carpetas de Datos ---
 SUB_PATHS = {
     "insc_materias": "inscripciones_materias",
-    "egresados": "egresados"
+    "egresados": "egresados",
+    "insc_carreras": "inscripciones_carreras"
 }
 
 
@@ -125,6 +126,50 @@ def cargar_egresados_tasa():
         df = pd.read_csv(file_path, encoding='utf-8', decimal=',')
         df['Tasa'] = df['Tasa'].astype(str).str.replace('%', '').str.replace(',', '.').astype(float)
         return df
+    except FileNotFoundError:
+        print(f"Advertencia: No se encontró el archivo en {file_path}")
+        return pd.DataFrame()
+
+# --- Funciones para la página de Inscripciones a Carreras ---
+
+def cargar_kpis_inscripciones_carreras():
+    """Carga los KPIs desde el archivo CSV de inscripciones a carreras."""
+    try:
+        folder = SUB_PATHS["insc_carreras"]
+        file_path = os.path.join(DATA_PATH, folder, 'kpis_inscripciones_carreras.csv')
+        df_kpi = pd.read_csv(file_path, encoding='utf-8')
+        return df_kpi.to_dict(orient='records')[0]
+    except (FileNotFoundError, IndexError):
+        print(f"Advertencia: No se encontró o está vacío el archivo en {file_path}")
+        return {}
+
+def cargar_inscriptos_por_dia():
+    """Carga la evolución de inscriptos por día."""
+    try:
+        folder = SUB_PATHS["insc_carreras"]
+        file_path = os.path.join(DATA_PATH, folder, 'inscriptos_por_dia.csv')
+        df = pd.read_csv(file_path, encoding='utf-8', parse_dates=['fecha_insc'])
+        return df
+    except FileNotFoundError:
+        print(f"Advertencia: No se encontró el archivo en {file_path}")
+        return pd.DataFrame()
+
+def cargar_comparativa_inscriptos_carrera():
+    """Carga la comparación de inscriptos vs preinscriptos por carrera."""
+    try:
+        folder = SUB_PATHS["insc_carreras"]
+        file_path = os.path.join(DATA_PATH, folder, 'inscriptos_vs_preinscriptos_por_carrera.csv')
+        return pd.read_csv(file_path, encoding='utf-8')
+    except FileNotFoundError:
+        print(f"Advertencia: No se encontró el archivo en {file_path}")
+        return pd.DataFrame()
+
+def cargar_preinscriptos_por_estado():
+    """Carga la distribución de preinscriptos por estado."""
+    try:
+        folder = SUB_PATHS["insc_carreras"]
+        file_path = os.path.join(DATA_PATH, folder, 'preinscripciones_por_estado.csv')
+        return pd.read_csv(file_path, encoding='utf-8')
     except FileNotFoundError:
         print(f"Advertencia: No se encontró el archivo en {file_path}")
         return pd.DataFrame()

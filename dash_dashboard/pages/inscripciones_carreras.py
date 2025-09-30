@@ -37,7 +37,7 @@ def create_static_kpi_card(title, value):
 
 # --- Layout de la Página ---
 layout = html.Div([
-    html.H1("Inscripciones a Carreras 2025"),
+    html.H1("Inscripciones a Carreras 2026"),
 
     # Fila de KPIs
     html.Div(className="row", children=[

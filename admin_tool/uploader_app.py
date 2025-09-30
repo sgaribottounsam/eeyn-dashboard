@@ -15,8 +15,15 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RAW_DATA_DIR = os.path.join(BASE_DIR, 'data', 'crudos')
 PROCESSED_DATA_DIR = os.path.join(BASE_DIR, 'data', 'procesados')
 DB_SCRIPTS_DIR = os.path.join(BASE_DIR, 'db_scripts')
-CLEANER_SCRIPT_PATH = os.path.join(BASE_DIR, 'limpiadores', 'limpiador_inscripciones.py')
-IMPORTER_SCRIPT_PATH = os.path.join(DB_SCRIPTS_DIR, 'inscripciones_cursadas.py')
+
+# Scripts para Cursadas
+CLEANER_CURSADAS_PATH = os.path.join(BASE_DIR, 'limpiadores', 'limpiador_inscripciones.py')
+IMPORTER_CURSADAS_PATH = os.path.join(DB_SCRIPTS_DIR, 'inscripciones_cursadas.py')
+
+# Scripts para Carreras
+CLEANER_CARRERAS_PATH = os.path.join(BASE_DIR, 'limpiadores', 'limpiador_inscripciones_carreras.py')
+IMPORTER_CARRERAS_PATH = os.path.join(DB_SCRIPTS_DIR, 'importador_inscripciones_carreras.py')
+
 
 # --- Funciones de Utilidad ---
 def generar_periodos():
@@ -59,8 +66,8 @@ def ejecutar_proceso(comando):
         st.error(f"El script finalizó con un error (código: {process.returncode}).")
         return False, stderr_output
 
-def mostrar_resumen_inscripciones():
-    """Consulta la base de datos y muestra un resumen de las inscripciones por período."""
+def mostrar_resumen_inscripciones_cursadas():
+    """Consulta la base de datos y muestra un resumen de las inscripciones a cursadas por período."""
     st.subheader("Resumen de Inscripciones a Cursadas por Período")
     try:
         db_path = os.path.join(BASE_DIR, 'data', 'base_de_datos', 'academica.db')
@@ -73,10 +80,30 @@ def mostrar_resumen_inscripciones():
         
         if not df.empty:
             st.write("Total de inscripciones por período en la base de datos:")
-            # Usar st.dataframe para una mejor visualización
             st.dataframe(df.rename(columns={'periodo': 'Período', 'total': 'Total Inscripciones'}).set_index('Período'))
         else:
-            st.info("No hay datos de inscripciones en la base de datos para mostrar.")
+            st.info("No hay datos de inscripciones a cursadas en la base de datos.")
+            
+    except Exception as e:
+        st.error(f"Ocurrió un error al consultar la base de datos: {e}")
+
+def mostrar_resumen_inscripciones_carreras():
+    """Consulta la db y muestra un resumen de las inscripciones a carreras por año."""
+    st.subheader("Resumen de Inscripciones a Carreras por Año")
+    try:
+        db_path = os.path.join(BASE_DIR, 'data', 'base_de_datos', 'academica.db')
+        conn = sqlite3.connect(db_path)
+        
+        query = "SELECT anio, COUNT(*) as total FROM inscripciones_carreras GROUP BY anio ORDER BY anio DESC"
+        df = pd.read_sql_query(query, conn)
+        
+        conn.close()
+        
+        if not df.empty:
+            st.write("Total de inscripciones por año en la base de datos:")
+            st.dataframe(df.rename(columns={'anio': 'Año', 'total': 'Total Inscripciones'}).set_index('Año'))
+        else:
+            st.info("No hay datos de inscripciones a carreras en la base de datos.")
             
     except Exception as e:
         st.error(f"Ocurrió un error al consultar la base de datos: {e}")
@@ -85,81 +112,116 @@ def mostrar_resumen_inscripciones():
 st.title("Herramienta de Carga de Datos Académicos")
 
 # --- Paso 1: Tipo de Importación ---
-st.header("Paso 1: Tipo de Importación")
+st.header("Paso 1: Seleccionar Tipo de Importación")
 tipo_importacion = st.selectbox(
-    "Seleccionar tipo de importación:",
-    ["Inscripciones a Cursadas"] #, "Inscripciones a Carreras", "Egresados"]
+    "Seleccionar el tipo de datos que deseas importar:",
+    ["Inscripciones a Cursadas", "Inscripciones a Carreras"] #, "Egresados"]
 )
 
-# --- Paso 2: Período Lectivo ---
-st.header("Paso 2: Período Lectivo")
-periodos_disponibles = generar_periodos()
-periodo_seleccionado = st.selectbox(
-    "Seleccionar período lectivo:",
-    periodos_disponibles
-)
+# --- Paso 2: Período o Año ---
+st.header("Paso 2: Seleccionar Período o Año")
+if tipo_importacion == "Inscripciones a Cursadas":
+    periodos_disponibles = generar_periodos()
+    periodo_seleccionado = st.selectbox(
+        "Seleccionar período lectivo:",
+        periodos_disponibles
+    )
+    info_paso_2 = periodo_seleccionado
+elif tipo_importacion == "Inscripciones a Carreras":
+    current_year = datetime.date.today().year
+    anios_disponibles = list(range(2015, current_year + 2))
+    anio_seleccionado = st.selectbox(
+        "Seleccionar año de inscripción:",
+        options=anios_disponibles,
+        index=len(anios_disponibles)-1
+    )
+    info_paso_2 = anio_seleccionado
 
 # --- Paso 3: Cargar Archivo ---
 st.header("Paso 3: Cargar Archivo")
 archivo_subido = st.file_uploader(
-    "Cargar el archivo Excel de inscripciones:",
+    f"Cargar el archivo Excel para '{tipo_importacion}':",
     type=['xlsx']
 )
 
 # --- Paso 4: Ejecutar Proceso ---
 st.header("Paso 4: Ejecutar Proceso")
 if st.button("Procesar y Cargar Datos"):
-    if not tipo_importacion:
-        st.warning("Por favor, selecciona un tipo de importación.")
-    elif not periodo_seleccionado:
-        st.warning("Por favor, selecciona un período lectivo.")
-    elif archivo_subido is None:
-        st.warning("Por favor, carga un archivo Excel.")
+    if not all([tipo_importacion, info_paso_2, archivo_subido]):
+        st.warning("Por favor, completa todos los pasos anteriores.")
     else:
         st.info("Iniciando el proceso de carga... No cierres esta ventana.")
 
-        # --- Lógica del Backend ---
-        
-        # 1. Guardar archivo temporalmente
-        temp_filename = f"inscripciones_temp_{periodo_seleccionado}.xlsx"
-        temp_filepath = os.path.join(RAW_DATA_DIR, temp_filename)
-        
-        with open(temp_filepath, "wb") as f:
-            f.write(archivo_subido.getbuffer())
-        st.success(f"Archivo temporal guardado en: `{temp_filepath}`")
-
-        # 2. Ejecutar script de limpieza
-        st.subheader("Ejecutando script de limpieza...")
-        processed_filename = f"inscripciones_procesado_{periodo_seleccionado}.csv"
-        processed_filepath = os.path.join(PROCESSED_DATA_DIR, processed_filename)
-        
-        comando_limpieza = [
-            "python", CLEANER_SCRIPT_PATH,
-            "--periodo", periodo_seleccionado,
-            "--archivo-entrada", temp_filepath,
-            "--archivo-salida", processed_filepath
-        ]
-        
-        limpieza_exitosa, out_limpieza = ejecutar_proceso(comando_limpieza)
-
-        # 3. Ejecutar script de importación a DB
-        if limpieza_exitosa:
-            st.subheader("Ejecutando script de importación a la base de datos...")
-            comando_importacion = [
-                "python", IMPORTER_SCRIPT_PATH,
-                "--archivo-csv", processed_filepath
-            ]
-            importacion_exitosa, out_importacion = ejecutar_proceso(comando_importacion)
+        # --- Lógica para Inscripciones a Cursadas ---
+        if tipo_importacion == "Inscripciones a Cursadas":
+            temp_filename = f"inscripciones_temp_{info_paso_2}.xlsx"
+            temp_filepath = os.path.join(RAW_DATA_DIR, temp_filename)
             
-            if importacion_exitosa:
-                st.balloons()
-                st.success("¡Proceso completado con éxito!")
-                st.info(f"Resumen de la importación:\n{out_importacion}")
-                mostrar_resumen_inscripciones()
-        else:
-            st.error("El proceso se detuvo debido a un error en el script de limpieza.")
+            with open(temp_filepath, "wb") as f:
+                f.write(archivo_subido.getbuffer())
+            st.success(f"Archivo temporal guardado en: `{temp_filepath}`")
 
-        # 4. Limpieza de archivo temporal
-        if os.path.exists(temp_filepath):
-            os.remove(temp_filepath)
-            st.info(f"Archivo temporal `{temp_filename}` eliminado.")
+            st.subheader("Ejecutando script de limpieza...")
+            processed_filename = f"inscripciones_procesado_{info_paso_2}.csv"
+            processed_filepath = os.path.join(PROCESSED_DATA_DIR, processed_filename)
+            
+            comando_limpieza = [
+                "python", CLEANER_CURSADAS_PATH,
+                "--periodo", info_paso_2,
+                "--archivo-entrada", temp_filepath,
+                "--archivo-salida", processed_filepath
+            ]
+            limpieza_exitosa, _ = ejecutar_proceso(comando_limpieza)
+
+            if limpieza_exitosa:
+                st.subheader("Ejecutando script de importación a la base de datos...")
+                comando_importacion = ["python", IMPORTER_CURSADAS_PATH, "--archivo-csv", processed_filepath]
+                importacion_exitosa, out_importacion = ejecutar_proceso(comando_importacion)
+                
+                if importacion_exitosa:
+                    st.balloons()
+                    st.success("¡Proceso completado con éxito!")
+                    mostrar_resumen_inscripciones_cursadas()
+            else:
+                st.error("El proceso se detuvo debido a un error en el script de limpieza.")
+
+            if os.path.exists(temp_filepath):
+                os.remove(temp_filepath)
+                st.info(f"Archivo temporal `{temp_filename}` eliminado.")
+
+        # --- Lógica para Inscripciones a Carreras ---
+        elif tipo_importacion == "Inscripciones a Carreras":
+            temp_filename = f"inscripciones_carreras_temp_{info_paso_2}.xlsx"
+            temp_filepath = os.path.join(RAW_DATA_DIR, temp_filename)
+
+            with open(temp_filepath, "wb") as f:
+                f.write(archivo_subido.getbuffer())
+            st.success(f"Archivo temporal guardado en: `{temp_filepath}`")
+
+            st.subheader("Ejecutando script de limpieza para carreras...")
+            processed_filename = f"inscripciones_carreras_procesado_{info_paso_2}.csv"
+            processed_filepath = os.path.join(PROCESSED_DATA_DIR, processed_filename)
+
+            comando_limpieza = [
+                "python", CLEANER_CARRERAS_PATH,
+                "--archivo-entrada", temp_filepath,
+                "--archivo-salida", processed_filepath,
+                "--anio", str(info_paso_2)
+            ]
+            limpieza_exitosa, _ = ejecutar_proceso(comando_limpieza)
+
+            if limpieza_exitosa:
+                st.subheader("Ejecutando script de importación a la base de datos...")
+                comando_importacion = ["python", IMPORTER_CARRERAS_PATH, "--archivo-csv", processed_filepath]
+                importacion_exitosa, _ = ejecutar_proceso(comando_importacion)
+
+                if importacion_exitosa:
+                    st.balloons()
+                    st.success("¡Proceso de importación de carreras completado con éxito!")
+                    mostrar_resumen_inscripciones_carreras()
+            else:
+                st.error("El proceso se detuvo debido a un error en el script de limpieza.")
+
+            if os.path.exists(temp_filepath):
+                os.remove(temp_filepath)
+                st.info(f"Archivo temporal `{temp_filename}` eliminado.")

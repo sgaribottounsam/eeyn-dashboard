@@ -1,2 +1,4 @@
-SELECT * FROM inscripciones_cursadas WHERE periodo = '2021-2'
-LIMIT 10
+
+SELECT anio, carrera, COUNT(DISTINCT n_documento) FROM inscripciones_carreras 
+WHERE anio = 2025
+GROUP BY carrera, anio

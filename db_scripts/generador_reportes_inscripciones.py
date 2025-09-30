@@ -47,6 +47,25 @@ def generar_reportes_inscripciones():
         df_estado = pd.read_sql_query("SELECT estado, COUNT(*) as cantidad FROM preinscriptos GROUP BY estado;", conn)
         df_estado.to_csv(os.path.join(OUTPUT_DIR, 'preinscripciones_por_estado.csv'), index=False)
 
+        # Tarea 3.4: Generar inscriptos_grado_por_dia.csv
+        print("-> Generando inscriptos_grado_por_dia.csv...")
+        query_grado_diario = """
+            SELECT
+                i.fecha_insc
+            FROM inscripciones_carreras AS i
+            JOIN carreras AS c ON i.carrera = c.Codigo
+            WHERE c.Tipo = 'GRADO'
+        """
+        df_grado_diario = pd.read_sql_query(query_grado_diario, conn)
+        
+        if not df_grado_diario.empty:
+            df_grado_diario['fecha_insc'] = pd.to_datetime(df_grado_diario['fecha_insc'])
+            df_conteo_diario = df_grado_diario.groupby('fecha_insc').size().reset_index(name='cantidad')
+            df_conteo_diario.to_csv(os.path.join(OUTPUT_DIR, 'inscriptos_grado_por_dia.csv'), index=False)
+            print(f"-> Se generó 'inscriptos_grado_por_dia.csv' con {len(df_conteo_diario)} registros de fechas.")
+        else:
+            print("-> No se encontraron inscripciones de grado para generar 'inscriptos_grado_por_dia.csv'.")
+
         # Fase 4.1: Generar KPIs
         print("-> Generando kpis_inscripciones_carreras.csv...")
         total_preinscriptos = pd.read_sql_query("SELECT COUNT(*) as total FROM preinscriptos;", conn)['total'][0]

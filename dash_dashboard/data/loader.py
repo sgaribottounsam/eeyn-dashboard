@@ -64,8 +64,8 @@ def cargar_evolucion_todas():
         columnas_numericas = ['2020', '2021', '2022', '2023', '2024', '2025']
         for col in columnas_numericas:
             if col in df.columns:
-                df[col] = pd.to_numeric(df[col], errors='coerce')
-        df[columnas_numericas] = df[columnas_numericas].fillna(0).astype(int)
+                # Proceso robusto por columna para evitar problemas de tipos
+                df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0).astype(int)
         df = df.dropna(how='all')
         return df[~df['Inscripciones'].str.contains('Total', na=False)]
     except FileNotFoundError:
@@ -80,8 +80,8 @@ def cargar_evolucion_grado():
         columnas_numericas = ['2020', '2021', '2022', '2023', '2024', '2025']
         for col in columnas_numericas:
             if col in df.columns:
-                df[col] = pd.to_numeric(df[col], errors='coerce')
-        df[columnas_numericas] = df[columnas_numericas].fillna(0).astype(int)
+                # Proceso robusto por columna para evitar problemas de tipos
+                df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0).astype(int)
         df = df.dropna(how='all')
         return df[~df['Inscripciones'].str.contains('Total', na=False)]
     except FileNotFoundError:

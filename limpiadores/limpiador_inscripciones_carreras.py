@@ -2,22 +2,22 @@
 import pandas as pd
 import re
 import os
+import argparse
 
-# --- Configuración del script ---
-INPUT_FILE = 'data/crudos/inscripciones a carreras 2025.xlsx'
-OUTPUT_FILE = 'data/procesados/inscripciones_carreras_2025_procesado.csv'
-CARRERAS_FILE = 'data/procesados/carreras.csv'
+# --- Configuración de rutas relativas ---
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CARRERAS_FILE = os.path.join(BASE_DIR, 'data', 'procesados', 'carreras.csv')
 
-def limpiar_inscripciones_carreras():
+def limpiar_inscripciones_carreras(input_file, output_file, anio):
     """
-    Procesa el reporte de inscripciones a carreras para el año 2025.
+    Procesa el reporte de inscripciones a carreras para un año específico.
     Extrae la carrera de los encabezados, normaliza los datos y los guarda en un CSV.
     """
-    print("Iniciando el proceso de limpieza de inscripciones a carreras 2025...")
+    print(f"Iniciando el proceso de limpieza de inscripciones a carreras para el año {anio}...")
 
-    if not all(os.path.exists(f) for f in [INPUT_FILE, CARRERAS_FILE]):
+    if not all(os.path.exists(f) for f in [input_file, CARRERAS_FILE]):
         print(f"Error: No se encontró el archivo de entrada o de carreras.")
-        print(f"Buscando: {INPUT_FILE} y {CARRERAS_FILE}")
+        print(f"Buscando: {input_file} y {CARRERAS_FILE}")
         return
 
     # --- Paso 1: Leer códigos de carrera válidos ---
@@ -31,7 +31,7 @@ def limpiar_inscripciones_carreras():
 
     # --- Paso 2: Procesar el archivo de inscripciones ---
     try:
-        df_inscripciones = pd.read_excel(INPUT_FILE, header=None)
+        df_inscripciones = pd.read_excel(input_file, header=None)
         
         datos_limpios = []
         current_carrera_code = None
@@ -58,7 +58,7 @@ def limpiar_inscripciones_carreras():
                     'fecha_insc': row.iloc[2],
                     'estado_insc': row.iloc[3],
                     'carrera': current_carrera_code,
-                    'anio': 2025
+                    'anio': anio
                 })
         
         if not datos_limpios:
@@ -72,13 +72,20 @@ def limpiar_inscripciones_carreras():
         df_limpio.drop_duplicates(subset=['n_documento', 'carrera'], inplace=True)
         print(f"-> Se eliminaron duplicados. Quedan {len(df_limpio)} registros únicos.")
         
-        os.makedirs(os.path.dirname(OUTPUT_FILE), exist_ok=True)
-        df_limpio.to_csv(OUTPUT_FILE, index=False, encoding='utf-8')
-        print(f"Proceso finalizado. Archivo limpio guardado como '{OUTPUT_FILE}'.")
+        os.makedirs(os.path.dirname(output_file), exist_ok=True)
+        df_limpio.to_csv(output_file, index=False, encoding='utf-8')
+        print(f"Proceso finalizado. Archivo limpio guardado como '{output_file}'.")
 
     except Exception as e:
         print(f"Error al procesar el archivo de inscripciones a carreras: {e}")
         return
 
 if __name__ == '__main__':
-    limpiar_inscripciones_carreras()
+    parser = argparse.ArgumentParser(description='Limpia los datos de inscripciones a carreras desde un archivo Excel.')
+    parser.add_argument('--archivo-entrada', required=True, help='Ruta del archivo Excel de entrada.')
+    parser.add_argument('--archivo-salida', required=True, help='Ruta del archivo CSV de salida.')
+    parser.add_argument('--anio', required=True, type=int, help='Año de la inscripción a procesar.')
+    
+    args = parser.parse_args()
+    
+    limpiar_inscripciones_carreras(args.archivo_entrada, args.archivo_salida, args.anio)

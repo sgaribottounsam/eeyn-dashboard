@@ -131,10 +131,11 @@ def toggle_sidebar(n, data):
 def display_page(pathname):
     if pathname == '/egresados':
         return egresados.layout
-    elif pathname == '/inscripciones-carreras':
-        return inscripciones_carreras.layout
-    else:
+    elif pathname == '/inscripciones-materias':
         return inscripciones_materias.layout
+    else:
+        # Por defecto, al entrar a la app ('/') o a '/inscripciones-carreras', se muestra esta página
+        return inscripciones_carreras.layout
 
 
 # --- Punto de Entrada para Ejecutar la App ---

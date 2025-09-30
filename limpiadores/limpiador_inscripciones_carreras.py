@@ -55,8 +55,13 @@ def limpiar_inscripciones_carreras(input_file, output_file, anio):
                 datos_limpios.append({
                     'apellido_y_nombre': row.iloc[0],
                     'n_documento': row.iloc[1],
-                    'fecha_insc': row.iloc[2],
-                    'estado_insc': row.iloc[3],
+                    'plan': row.iloc[2],
+                    'version': row.iloc[3],
+                    'fecha_insc': row.iloc[4],
+                    'fecha_ingreso': row.iloc[5],
+                    'estado_insc': row.iloc[6],
+                    'tipo_ingreso': row.iloc[7],
+                    'modalidad': row.iloc[8],
                     'carrera': current_carrera_code,
                     'anio': anio
                 })
@@ -67,6 +72,13 @@ def limpiar_inscripciones_carreras(input_file, output_file, anio):
 
         # --- Paso 3: Eliminar duplicados y guardar los datos limpios ---
         df_limpio = pd.DataFrame(datos_limpios)
+
+        # Convertir y estandarizar fechas a 'YYYY-MM-DD'
+        df_limpio['fecha_insc'] = pd.to_datetime(df_limpio['fecha_insc'], dayfirst=True, errors='coerce').dt.strftime('%Y-%m-%d')
+        df_limpio['fecha_ingreso'] = pd.to_datetime(df_limpio['fecha_ingreso'], dayfirst=True, errors='coerce').dt.strftime('%Y-%m-%d')
+        
+        # Eliminar filas donde la conversión de fecha de inscripción falló
+        df_limpio.dropna(subset=['fecha_insc'], inplace=True)
 
         # Eliminamos duplicados basados en la futura llave primaria
         df_limpio.drop_duplicates(subset=['n_documento', 'carrera'], inplace=True)

@@ -49,7 +49,8 @@ def importar_inscripciones_carreras(csv_input_path):
         # La llave primaria se define con 'nº_documento' y 'propuesta'.
         create_table_query = f"""
         CREATE TABLE IF NOT EXISTS {TABLE_NAME} (
-            {column_definitions}
+            {column_definitions},
+            PRIMARY KEY ("n_documento", "carrera")
         );
         """
         cursor.execute(create_table_query)

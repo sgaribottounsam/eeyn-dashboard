@@ -1,31 +1,33 @@
-
 import pandas as pd
 import sqlite3
 import os
+import argparse
+import sys
 
 # --- Configuración ---
-CSV_INPUT_PATH = 'data/procesados/preinscriptos_2025_procesado.csv'
-DB_OUTPUT_PATH = 'data/base_de_datos/academica.db'
+DB_OUTPUT_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data', 'base_de_datos', 'academica.db')
 TABLE_NAME = 'preinscriptos'
 
-def importar_preinscriptos():
+def importar_preinscriptos(csv_input_path):
     """
     Importa los datos de preinscriptos desde un CSV a la base de datos SQLite.
     La tabla es eliminada y creada de nuevo en cada ejecución para asegurar datos frescos.
     """
-    print(f"Iniciando la importación de '{CSV_INPUT_PATH}' a la tabla '{TABLE_NAME}'...")
+    print(f"Iniciando la importación de '{csv_input_path}' a la tabla '{TABLE_NAME}'...")
 
-    if not os.path.exists(CSV_INPUT_PATH):
-        print(f"Error: No se encontró el archivo CSV en la ruta: {CSV_INPUT_PATH}")
-        return
+    if not os.path.exists(csv_input_path):
+        print(f"Error: No se encontró el archivo CSV en la ruta: {csv_input_path}")
+        sys.exit(1)
 
     # --- Paso 1: Leer el archivo CSV ---
     try:
-        df = pd.read_csv(CSV_INPUT_PATH, encoding='utf-8')
+        df = pd.read_csv(csv_input_path, encoding='utf-8')
+        # Forzar todos los datos a string para consistencia con la DB (columnas TEXT)
+        df = df.astype(str)
         print(f"-> Archivo CSV cargado. Se encontraron {len(df)} registros.")
     except Exception as e:
         print(f"Ocurrió un error al leer el CSV: {e}")
-        return
+        sys.exit(1)
 
     # --- Paso 2: Conectarse a la base de datos ---
     try:
@@ -34,7 +36,7 @@ def importar_preinscriptos():
         print(f"-> Conexión con la base de datos '{DB_OUTPUT_PATH}' establecida.")
     except Exception as e:
         print(f"Ocurrió un error al conectar con la base de datos: {e}")
-        return
+        sys.exit(1)
 
     # --- Paso 3: Eliminar y crear la tabla con llave primaria compuesta ---
     try:
@@ -42,8 +44,7 @@ def importar_preinscriptos():
         cursor.execute(f"DROP TABLE IF EXISTS {TABLE_NAME}")
 
         print(f"-> Creando la tabla '{TABLE_NAME}' con llave primaria (identificacion, carrera)...")
-        # Los nombres de columna ya vienen en snake_case desde el limpiador
-        column_definitions = ", ".join([f'"{col}" TEXT' for col in df.columns])
+        column_definitions = ", ".join([f'\"{col}\" TEXT' for col in df.columns])
         
         create_table_query = f"""
         CREATE TABLE {TABLE_NAME} (
@@ -57,7 +58,7 @@ def importar_preinscriptos():
     except Exception as e:
         print(f"Ocurrió un error al recrear la tabla: {e}")
         conn.close()
-        return
+        sys.exit(1)
         
     # --- Paso 4: Insertar datos en la nueva tabla ---
     try:
@@ -74,4 +75,7 @@ def importar_preinscriptos():
     print(f"\n¡Proceso de importación de {TABLE_NAME} completado!")
 
 if __name__ == '__main__':
-    importar_preinscriptos()
+    parser = argparse.ArgumentParser(description='Importa datos de preinscripciones a la base de datos.')
+    parser.add_argument('--archivo-csv', required=True, help='Ruta del archivo CSV a importar.')
+    args = parser.parse_args()
+    importar_preinscriptos(args.archivo_csv)

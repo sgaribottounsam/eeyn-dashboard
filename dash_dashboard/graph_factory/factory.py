@@ -224,3 +224,71 @@ def crear_grafico_distribucion_preinscriptos_estado(df):
     fig.update_traces(textposition='inside', textinfo='percent+label')
     fig.update_layout(height=GRAPH_HEIGHT, showlegend=False)
     return fig
+
+def crear_grafico_inscriptos_grado_por_dia(df):
+    """
+    Crea un gráfico de líneas que muestra el total acumulado de inscriptos de grado por día.
+    Compara los años a partir de 2024 en el período del 1 de octubre al 15 de noviembre.
+    """
+    if df.empty:
+        return crear_grafico_vacio("No hay datos de inscripciones de grado para mostrar.")
+
+    fig = go.Figure()
+
+    # La data ya viene filtrada y agrupada desde la consulta SQL
+    df['anio'] = df['anio'].astype(str)
+    df_pivot = df.pivot_table(index='dia_mes', columns='anio', values='cantidad', aggfunc='sum').fillna(0)
+    
+    # Asegurar que el orden del eje X sea cronológico y calcular el acumulado
+    df_pivot.sort_index(inplace=True)
+    df_cumulative = df_pivot.cumsum()
+
+    for year in sorted(df_cumulative.columns):
+        # User request: 2026 solid, others dotted.
+        line_style = 'solid' if year == '2026' else 'dot'
+        
+        x_axis_labels = [pd.to_datetime(f"1900-{day_month}").strftime('%d-%b') for day_month in df_cumulative.index]
+
+        fig.add_trace(go.Scatter(
+            x=x_axis_labels,
+            y=df_cumulative[year],
+            mode='lines+markers',
+            name=year,
+            line=dict(dash=line_style)
+        ))
+
+    fig.update_layout(
+        title_text='Inscriptos de Grado por Día (Acumulado)',
+        xaxis_title='Fecha',
+        yaxis_title='Total Acumulado de Inscriptos',
+        legend_title='Año',
+        height=GRAPH_HEIGHT,
+        plot_bgcolor='white'
+    )
+
+    return fig
+
+def crear_grafico_inscripciones_por_anio_carrera(df):
+    """
+    Crea un gráfico de barras apiladas de inscripciones por año y carrera.
+    """
+    if df.empty:
+        return crear_grafico_vacio("No hay datos de inscripciones por año y carrera.")
+
+    fig = px.bar(
+        df,
+        x='anio',
+        y='cantidad',
+        color='carrera_codigo', # Usa el código para el mapeo de colores
+        hover_name='carrera_nombre', # Muestra el nombre completo en el hover
+        barmode='stack',
+        title='Inscripciones de Grado por Año y Carrera',
+        labels={'anio': 'Año', 'cantidad': 'Cantidad de Inscriptos', 'carrera_codigo': 'Carrera'},
+        color_discrete_map=COLORES_CARRERAS
+    )
+
+    fig.update_layout(
+        height=GRAPH_HEIGHT,
+        plot_bgcolor='white'
+    )
+    return fig

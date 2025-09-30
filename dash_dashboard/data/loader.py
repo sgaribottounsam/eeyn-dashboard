@@ -1,5 +1,6 @@
 import pandas as pd
 import os
+import sqlite3
 
 # --- Path a la Carpeta de Datos (Método Robusto) ---
 # 1. Obtenemos la ruta absoluta del directorio donde está ESTE archivo (loader.py).
@@ -172,5 +173,65 @@ def cargar_preinscriptos_por_estado():
         return pd.read_csv(file_path, encoding='utf-8')
     except FileNotFoundError:
         print(f"Advertencia: No se encontró el archivo en {file_path}")
+        return pd.DataFrame()
+
+def cargar_inscriptos_grado_por_dia():
+    """
+    Carga la evolución de inscriptos de grado por día directamente desde la BD,
+    filtrando para los años y fechas de interés.
+    """
+    db_path = os.path.join(project_root, 'data', 'base_de_datos', 'academica.db')
+    
+    query = """
+        SELECT
+            ic.anio, -- Usar el año académico correcto
+            strftime('%m-%d', ic.fecha_insc) AS dia_mes,
+            COUNT(DISTINCT ic.n_documento) AS cantidad
+        FROM inscripciones_carreras AS ic
+        JOIN propuestas AS p ON ic.carrera = p.codigo
+        WHERE ic.anio >= 2024 -- Filtrar por año académico
+          AND (
+            (strftime('%m', ic.fecha_insc) = '10') OR
+            (strftime('%m', ic.fecha_insc) = '11' AND strftime('%d', ic.fecha_insc) <= '15')
+          )
+          AND p.tipo = 'Grado'
+        GROUP BY ic.anio, dia_mes
+        ORDER BY ic.anio, dia_mes;
+    """
+    try:
+        conn = sqlite3.connect(db_path)
+        df = pd.read_sql_query(query, conn)
+        conn.close()
+        print("-> Datos de inscriptos diarios por grado cargados desde la BD.")
+        return df
+    except Exception as e:
+        print(f"Error al consultar la base de datos para inscriptos diarios: {e}")
+        return pd.DataFrame()
+
+def cargar_inscripciones_por_anio_carrera():
+    """
+    Carga el conteo de inscripciones por año y carrera (solo Grado) desde la BD.
+    """
+    db_path = os.path.join(project_root, 'data', 'base_de_datos', 'academica.db')
+    query = """
+        SELECT
+            ic.anio,
+            ic.carrera AS carrera_codigo,
+            p.nombre AS carrera_nombre,
+            COUNT(ic.n_documento) AS cantidad
+        FROM inscripciones_carreras AS ic
+        JOIN propuestas AS p ON ic.carrera = p.codigo
+        WHERE p.tipo = 'Grado'
+        GROUP BY ic.anio, carrera_codigo, carrera_nombre
+        ORDER BY ic.anio, carrera_nombre;
+    """
+    try:
+        conn = sqlite3.connect(db_path)
+        df = pd.read_sql_query(query, conn)
+        conn.close()
+        print("-> Datos de inscripciones por año y carrera cargados desde la BD.")
+        return df
+    except Exception as e:
+        print(f"Error al consultar la base de datos para inscripciones por año/carrera: {e}")
         return pd.DataFrame()
 

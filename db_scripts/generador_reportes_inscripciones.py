@@ -53,13 +53,17 @@ def generar_reportes_inscripciones():
             SELECT
                 i.fecha_insc
             FROM inscripciones_carreras AS i
-            JOIN carreras AS c ON i.carrera = c.Codigo
-            WHERE c.Tipo = 'GRADO'
+            JOIN propuestas AS p ON i.carrera = p.codigo
+            WHERE p.tipo = 'Grado'
         """
         df_grado_diario = pd.read_sql_query(query_grado_diario, conn)
         
         if not df_grado_diario.empty:
-            df_grado_diario['fecha_insc'] = pd.to_datetime(df_grado_diario['fecha_insc'])
+            # Coerce errors will turn unparseable dates into NaT (Not a Time)
+            df_grado_diario['fecha_insc'] = pd.to_datetime(df_grado_diario['fecha_insc'], errors='coerce')
+            # Drop rows with invalid dates
+            df_grado_diario.dropna(subset=['fecha_insc'], inplace=True)
+            
             df_conteo_diario = df_grado_diario.groupby('fecha_insc').size().reset_index(name='cantidad')
             df_conteo_diario.to_csv(os.path.join(OUTPUT_DIR, 'inscriptos_grado_por_dia.csv'), index=False)
             print(f"-> Se generó 'inscriptos_grado_por_dia.csv' con {len(df_conteo_diario)} registros de fechas.")

@@ -2,12 +2,10 @@ from dash import dcc, html, Input, Output, State
 from datetime import datetime
 
 # Paso 1: Importar la app desde app.py
-from app import app
-# Importamos el 'server' también, es una buena práctica para el despliegue
-from app import server
+from .app import app, server
 
 # Paso 2: Importar los layouts de nuestras páginas.
-from pages import inscripciones_materias, egresados, inscripciones_carreras
+from .pages import inscripciones_materias, egresados, inscripciones_carreras
 
 # --- Estilos Dinámicos ---
 # Estilo de la barra lateral cuando está ABIERTA

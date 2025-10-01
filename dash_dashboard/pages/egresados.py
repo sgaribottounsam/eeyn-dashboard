@@ -2,15 +2,15 @@ from dash import dcc, html, Input, Output, State, ctx, dash
 import json
 
 # Importamos la instancia de la app
-from app import app
+from ..app import app
 # Importamos las funciones para cargar datos y crear gráficos
-from data.loader import (
+from ..data.loader import (
     cargar_datos_egresados,
     cargar_egresados_tasa,
     cargar_kpis_egresados,
     cargar_evolucion_egresados
 )
-from graph_factory.factory import (
+from ..graph_factory.factory import (
     crear_grafico_cantidad_graduados_por_plan,
     crear_grafico_tasa_graduacion,
     crear_grafico_duracion_carrera,

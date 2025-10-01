@@ -8,12 +8,12 @@ import json
 from datetime import datetime
 
 # Importamos la instancia de la app y funciones de carga y gráficos
-from app import app
-from data.loader import (
+from ..app import app
+from ..data.loader import (
     cargar_inscriptos_grado_por_dia,
     cargar_inscripciones_por_anio_carrera,
 )
-from graph_factory.factory import (
+from ..graph_factory.factory import (
     crear_grafico_inscriptos_grado_por_dia,
     crear_grafico_inscripciones_por_anio_carrera,
     COLORES_CARRERAS # <-- IMPORTAMOS EL DICCIONARIO DE COLORES

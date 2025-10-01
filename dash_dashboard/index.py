@@ -34,6 +34,7 @@ CONTENT_STYLE_OPEN = {
     "marginLeft": "23rem",
     "padding": "2rem 1rem",
     "transition": "all 0.3s ease", # Transición suave
+    "maxWidth": "1400px", # <-- ANCHO MÁXIMO AÑADIDO
 }
 
 # Estilo del contenido cuando la barra lateral está CERRADA
@@ -61,7 +62,7 @@ sidebar = html.Div(
 content = html.Div(
     [
         # Botón para mostrar/ocultar la barra lateral
-        html.Button("☰", id="sidebar-toggle", n_clicks=0, style={
+        html.Button("←", id="sidebar-toggle", n_clicks=0, style={
             'position': 'fixed',
             'top': '10px',
             'left': '10px',
@@ -102,28 +103,27 @@ app.layout = html.Div([
 @app.callback(
     [Output("sidebar", "style"),
      Output("content-container", "style"),
-     Output("sidebar-state", "data")],
+     Output("sidebar-state", "data"),
+     Output("sidebar-toggle", "children")],
     [Input("sidebar-toggle", "n_clicks")],
     [State("sidebar-state", "data")]
 )
 def toggle_sidebar(n, data):
-    # Solo reacciona si el botón fue clickeado
     if n:
         is_open = not data["is_open"]
         if is_open:
-            # Si se abre, aplicamos los estilos de "abierta"
             sidebar_style = SIDEBAR_STYLE_OPEN
             content_style = CONTENT_STYLE_OPEN
+            button_icon = "←"
         else:
-            # Si se cierra, aplicamos los estilos de "cerrada"
             sidebar_style = SIDEBAR_STYLE_CLOSED
             content_style = CONTENT_STYLE_CLOSED
+            button_icon = "→"
         
-        # Devolvemos los nuevos estilos y el nuevo estado para guardarlo
-        return sidebar_style, content_style, {"is_open": is_open}
+        return sidebar_style, content_style, {"is_open": is_open}, button_icon
 
-    # Estado inicial, no hacer nada hasta el primer clic
-    return SIDEBAR_STYLE_OPEN, CONTENT_STYLE_OPEN, data
+    # Estado inicial
+    return SIDEBAR_STYLE_OPEN, CONTENT_STYLE_OPEN, data, "←"
 
 
 # --- Callback de Navegación ---
@@ -141,4 +141,3 @@ def display_page(pathname):
 # --- Punto de Entrada para Ejecutar la App ---
 if __name__ == '__main__':
     app.run(debug=True)
-

@@ -3,6 +3,8 @@
 # Salir inmediatamente si un comando falla
 set -e
 
-# Ejecutar la aplicación Streamlit
-streamlit run _output/dashboard_eeyn.py --server.port $PORT --server.headless true
+# Instalar dependencias
+pip install -r requirements.txt
 
+# Ejecutar la aplicación Dash con Gunicorn
+gunicorn dash_dashboard.index:server

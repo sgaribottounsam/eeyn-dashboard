@@ -1,18 +1,22 @@
-
 import pandas as pd
 import sqlite3
 import os
+from datetime import datetime
 
 # --- Configuración ---
+# Para cambiar el año de los reportes, simplemente modifica el valor de la variable YEAR.
+# Por ejemplo, para generar reportes para el año 2026, cambia YEAR = 2025 a YEAR = 2026.
+YEAR = 2025
+
 DB_PATH = 'data/base_de_datos/academica.db'
 OUTPUT_DIR = '_output/inscripciones_carreras'
 
-def generar_reportes_inscripciones():
+def generar_reportes_inscripciones(year):
     """
     Se conecta a la base de datos para generar los reportes CSV y KPIs
-    necesarios para el dashboard de inscripciones a carreras.
+    necesarios para el dashboard de inscripciones a carreras para un año específico.
     """
-    print("Iniciando la generación de reportes de inscripciones a carreras...")
+    print(f"Iniciando la generación de reportes de inscripciones a carreras para el año {year}...")
 
     if not os.path.exists(DB_PATH):
         print(f"Error: No se encontró la base de datos en {DB_PATH}")
@@ -31,37 +35,41 @@ def generar_reportes_inscripciones():
     try:
         # Tarea 3.1: Generar inscriptos_por_dia.csv
         print("-> Generando inscriptos_por_dia.csv...")
-        df_inscriptos_dia = pd.read_sql_query("SELECT fecha_insc, COUNT(*) as cantidad FROM inscripciones_carreras GROUP BY fecha_insc ORDER BY fecha_insc;", conn)
+        query_inscriptos_dia = f"SELECT fecha_insc, COUNT(*) as cantidad FROM inscripciones_carreras WHERE anio = {year} GROUP BY fecha_insc ORDER BY fecha_insc;"
+        df_inscriptos_dia = pd.read_sql_query(query_inscriptos_dia, conn)
         df_inscriptos_dia.to_csv(os.path.join(OUTPUT_DIR, 'inscriptos_por_dia.csv'), index=False)
 
         # Tarea 3.2: Generar inscriptos_vs_preinscriptos_por_carrera.csv
         print("-> Generando inscriptos_vs_preinscriptos_por_carrera.csv...")
-        df_preinscriptos = pd.read_sql_query("SELECT carrera, COUNT(*) as preinscriptos FROM preinscriptos GROUP BY carrera;", conn)
-        df_inscriptos = pd.read_sql_query("SELECT carrera, COUNT(*) as inscriptos FROM inscripciones_carreras WHERE estado_insc = 'Aceptada' GROUP BY carrera;", conn)
+        query_preinscriptos = f"SELECT carrera, COUNT(*) as preinscriptos FROM preinscriptos WHERE anio = {year} GROUP BY carrera;"
+        df_preinscriptos = pd.read_sql_query(query_preinscriptos, conn)
+        
+        query_inscriptos = f"SELECT carrera, COUNT(*) as inscriptos FROM inscripciones_carreras WHERE estado_insc = 'Aceptada' AND anio = {year} GROUP BY carrera;"
+        df_inscriptos = pd.read_sql_query(query_inscriptos, conn)
+        
         df_comparativa = pd.merge(df_preinscriptos, df_inscriptos, on='carrera', how='outer').fillna(0)
         df_comparativa['inscriptos'] = df_comparativa['inscriptos'].astype(int)
         df_comparativa.to_csv(os.path.join(OUTPUT_DIR, 'inscriptos_vs_preinscriptos_por_carrera.csv'), index=False)
 
         # Tarea 3.3: Generar preinscripciones_por_estado.csv
         print("-> Generando preinscripciones_por_estado.csv...")
-        df_estado = pd.read_sql_query("SELECT estado, COUNT(*) as cantidad FROM preinscriptos GROUP BY estado;", conn)
+        query_estado = f"SELECT estado, COUNT(*) as cantidad FROM preinscriptos WHERE anio = {year} GROUP BY estado;"
+        df_estado = pd.read_sql_query(query_estado, conn)
         df_estado.to_csv(os.path.join(OUTPUT_DIR, 'preinscripciones_por_estado.csv'), index=False)
 
         # Tarea 3.4: Generar inscriptos_grado_por_dia.csv
         print("-> Generando inscriptos_grado_por_dia.csv...")
-        query_grado_diario = """
+        query_grado_diario = f"""
             SELECT
                 i.fecha_insc
             FROM inscripciones_carreras AS i
             JOIN propuestas AS p ON i.carrera = p.codigo
-            WHERE p.tipo = 'Grado'
+            WHERE p.tipo = 'Grado' AND i.anio = {year}
         """
         df_grado_diario = pd.read_sql_query(query_grado_diario, conn)
         
         if not df_grado_diario.empty:
-            # Coerce errors will turn unparseable dates into NaT (Not a Time)
             df_grado_diario['fecha_insc'] = pd.to_datetime(df_grado_diario['fecha_insc'], errors='coerce')
-            # Drop rows with invalid dates
             df_grado_diario.dropna(subset=['fecha_insc'], inplace=True)
             
             df_conteo_diario = df_grado_diario.groupby('fecha_insc').size().reset_index(name='cantidad')
@@ -72,10 +80,18 @@ def generar_reportes_inscripciones():
 
         # Fase 4.1: Generar KPIs
         print("-> Generando kpis_inscripciones_carreras.csv...")
-        total_preinscriptos = pd.read_sql_query("SELECT COUNT(*) as total FROM preinscriptos;", conn)['total'][0]
-        total_inscriptos = pd.read_sql_query("SELECT COUNT(*) as total FROM inscripciones_carreras WHERE estado_insc = 'Aceptada';", conn)['total'][0]
+        query_total_preinscriptos = f"SELECT COUNT(*) as total FROM preinscriptos WHERE anio = {year};"
+        total_preinscriptos = pd.read_sql_query(query_total_preinscriptos, conn)['total'][0]
+
+        query_total_inscriptos = f"SELECT COUNT(*) as total FROM inscripciones_carreras WHERE estado_insc = 'Aceptada' AND anio = {year};"
+        total_inscriptos = pd.read_sql_query(query_total_inscriptos, conn)['total'][0]
+        
         tasa_conversion = (total_inscriptos / total_preinscriptos) * 100 if total_preinscriptos > 0 else 0
-        estado_principal = pd.read_sql_query("SELECT estado FROM preinscriptos GROUP BY estado ORDER BY COUNT(*) DESC LIMIT 1;", conn)['estado'][0]
+        
+        query_estado_principal = f"SELECT estado FROM preinscriptos WHERE anio = {year} GROUP BY estado ORDER BY COUNT(*) DESC LIMIT 1;"
+        estado_principal_series = pd.read_sql_query(query_estado_principal, conn)
+        estado_principal = estado_principal_series['estado'][0] if not estado_principal_series.empty else 'N/A'
+
 
         kpis = {
             'Total Preinscriptos': [total_preinscriptos],
@@ -95,4 +111,4 @@ def generar_reportes_inscripciones():
         print("-> Conexión con la base de datos cerrada.")
 
 if __name__ == '__main__':
-    generar_reportes_inscripciones()
+    generar_reportes_inscripciones(YEAR)

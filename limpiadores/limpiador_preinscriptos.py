@@ -2,74 +2,77 @@ import pandas as pd
 import re
 import os
 import argparse
+import unicodedata
 
-# --- Configuración de rutas relativas ---
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-CARRERAS_FILE = os.path.join(BASE_DIR, 'data', 'procesados', 'carreras.csv')
+def slugify(value):
+    """
+    Normalizes string, converts to lowercase, removes non-alpha characters,
+    and converts spaces to underscores.
+    """
+    value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore').decode('ascii')
+    value = re.sub(r'[^\w\s-]', '', value).strip().lower()
+    return re.sub(r'[-\s]+', '_', value)
 
 def limpiar_preinscriptos(input_file, output_file, anio):
     """
     Procesa el reporte de preinscriptos a carreras para un año específico.
-    Extrae la carrera de los encabezados, normaliza los datos y los guarda en un CSV.
+    Extrae la carrera de los encabezados, normaliza los datos y todas las columnas,
+    y los guarda en un CSV.
     """
     print(f"Iniciando el proceso de limpieza de preinscriptos para el año {anio}...")
 
-    if not all(os.path.exists(f) for f in [input_file, CARRERAS_FILE]):
-        print(f"Error: No se encontró el archivo de entrada o de carreras.")
-        print(f"Buscando: {input_file} y {CARRERAS_FILE}")
+    if not os.path.exists(input_file):
+        print(f"Error: No se encontró el archivo de entrada: {input_file}")
         return
 
-    # --- Paso 1: Leer códigos de carrera válidos ---
     try:
-        df_carreras = pd.read_csv(CARRERAS_FILE, encoding='utf-8')
-        codigos_carrera_validos = set(df_carreras['Codigo'])
-        print(f"-> Se cargaron {len(codigos_carrera_validos)} códigos de carrera válidos.")
-    except Exception as e:
-        print(f"Error al leer el archivo de carreras: {e}")
-        return
-
-    # --- Paso 2: Procesar el archivo de preinscriptos ---
-    try:
-        df_preinscriptos = pd.read_excel(input_file, header=None)
+        df_raw = pd.read_excel(input_file, header=None)
         
-        datos_limpios = []
+        all_data = []
         current_carrera_code = None
+        header_list = []
 
         print("-> Procesando filas del reporte de preinscriptos...")
-        for index, row in df_preinscriptos.iterrows():
+        for index, row in df_raw.iterrows():
+            # Fila de Carrera: Busca un código entre paréntesis, ej: (CP-CCCP-PC)
             cell_value = str(row.iloc[0])
             match = re.search(r'\((.*?)\)', cell_value)
             
-            if match and match.group(1) in codigos_carrera_validos:
+            if match:
+                # Extrae el código de la carrera y lo almacena
                 current_carrera_code = match.group(1)
+                print(f"  -> Detectada carrera: {current_carrera_code}")
                 continue
 
-            if 'Apellido y Nombres' in cell_value or 'Identificación' in str(row.iloc[1]):
+            # Fila de Encabezado: Busca la fila que contiene los títulos de las columnas
+            if 'Apellido y Nombres' in cell_value:
+                header_list = [slugify(str(col)) for col in row if pd.notna(col)]
+                print(f"  -> Encabezados de datos identificados: {header_list}")
                 continue
 
-            if current_carrera_code and pd.notna(row.iloc[1]):
-                # INDICES CORREGIDOS: Se asume que hay 2 columnas extra (ej. Sexo, Nacionalidad) no utilizadas
-                # entre 'identificacion' (1) y 'email' (que ahora es el índice 4)
-                datos_limpios.append({
-                    'apellido_y_nombres': row.iloc[0],
-                    'identificacion': row.iloc[1],
-                    'email': row.iloc[4],      # Corregido
-                    'telefono': row.iloc[5],    # Corregido
-                    'colegio': row.iloc[6],     # Corregido
-                    'estado': row.iloc[7],      # Corregido
-                    'carrera': current_carrera_code,
-                    'anio': anio
-                })
+            # Si no tenemos carrera o encabezados, o la fila es inválida, la saltamos
+            if not current_carrera_code or not header_list or pd.isna(row.iloc[1]):
+                continue
+
+            # Fila de Datos: Procesar datos del estudiante
+            row_data = {header_list[i]: val for i, val in enumerate(row) if i < len(header_list)}
+            row_data['carrera'] = current_carrera_code
+            row_data['anio'] = anio
+            all_data.append(row_data)
         
-        if not datos_limpios:
+        if not all_data:
             print("Resultado: No se encontraron datos de preinscripción válidos.")
             return
 
-        # --- Paso 3: Eliminar duplicados y guardar los datos limpios ---
-        df_limpio = pd.DataFrame(datos_limpios)
+        # --- Crear y limpiar el DataFrame final ---
+        df_limpio = pd.DataFrame(all_data)
         
-        df_limpio.drop_duplicates(subset=['identificacion', 'carrera'], inplace=True)
-        print(f"-> Se eliminaron duplicados. Quedan {len(df_limpio)} registros únicos.")
+        # Asegurarse que la columna 'identificacion' existe antes de usarla
+        if 'identificacion' in df_limpio.columns:
+            df_limpio.drop_duplicates(subset=['identificacion', 'carrera'], inplace=True)
+            print(f"-> Se eliminaron duplicados. Quedan {len(df_limpio)} registros únicos.")
+        else:
+            print("Advertencia: No se encontró la columna 'identificacion'. No se pudieron eliminar duplicados.")
 
         os.makedirs(os.path.dirname(output_file), exist_ok=True)
         df_limpio.to_csv(output_file, index=False, encoding='utf-8')

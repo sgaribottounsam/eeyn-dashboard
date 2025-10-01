@@ -1,4 +1,3 @@
-
 import dash
 from dash import dcc, html
 
@@ -8,13 +7,11 @@ from data.loader import (
     cargar_kpis_inscripciones_carreras,
     cargar_inscriptos_grado_por_dia,
     cargar_inscripciones_por_anio_carrera, # Nueva función
-    cargar_comparativa_inscriptos_carrera,
     cargar_preinscriptos_por_estado
 )
 from graph_factory.factory import (
     crear_grafico_inscriptos_grado_por_dia,
     crear_grafico_inscripciones_por_anio_carrera, # Nueva función
-    crear_grafico_comparativa_inscriptos_carrera,
     crear_grafico_distribucion_preinscriptos_estado
 )
 
@@ -24,7 +21,6 @@ dash.register_page(__name__, path='/inscripciones-carreras', name='Inscripciones
 # --- Carga de Datos ---
 df_inscriptos_grado_dia = cargar_inscriptos_grado_por_dia()
 df_insc_anio_carrera = cargar_inscripciones_por_anio_carrera() # Nuevos datos
-df_comparativa = cargar_comparativa_inscriptos_carrera()
 df_estado = cargar_preinscriptos_por_estado()
 kpis = cargar_kpis_inscripciones_carreras()
 
@@ -40,7 +36,7 @@ def create_static_kpi_card(title, value):
 
 # --- Layout de la Página ---
 layout = html.Div([
-    html.H1("Inscripciones a Carreras 2026"),
+    html.H1("Inscripciones a Carreras 2025"),
 
     # Fila de KPIs
     html.Div(className="row", children=[
@@ -59,6 +55,6 @@ layout = html.Div([
         html.Div([dcc.Graph(figure=crear_grafico_inscripciones_por_anio_carrera(df_insc_anio_carrera))], className="six columns"),
     ], className="row"),
     html.Div([
-        html.Div([dcc.Graph(figure=crear_grafico_comparativa_inscriptos_carrera(df_comparativa))], className="twelve columns"),
+        html.Div([dcc.Graph(figure=crear_grafico_distribucion_preinscriptos_estado(df_estado))], className="twelve columns"),
     ], className="row"),
 ])

@@ -2,3 +2,6 @@ GEMINI.md
 database_schema.md
 /.venv/
 /especificaciones/
+
+.gemini/
+gha-creds-*.json

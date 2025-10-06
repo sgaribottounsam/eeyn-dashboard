@@ -58,6 +58,45 @@ def ejecutar_proceso(comando):
         st.error(f"El script finalizó con un error (código: {process.returncode}).")
         return False, stderr_output
 
+def ejecutar_comando_shell(comando, cwd, check=True):
+    """Ejecuta un comando de shell y muestra la salida en Streamlit.
+
+    Args:
+        comando (str): El comando a ejecutar.
+        cwd (str): El directorio de trabajo.
+        check (bool): Si es True, lanza una excepción en caso de error.
+
+    Returns:
+        subprocess.CompletedProcess or subprocess.CalledProcessError: 
+        El objeto de proceso completado o la excepción capturada.
+    """
+    st.write(f"Ejecutando: `{comando}`")
+    try:
+        process = subprocess.run(
+            comando,
+            shell=True,
+            capture_output=True,
+            text=True,
+            cwd=cwd,
+            check=check,
+            encoding='utf-8'
+        )
+        # Solo mostrar salida stdout en caso de éxito si el check está activado
+        if process.stdout and check:
+            st.info(f"Salida:\n{process.stdout}")
+        if check:
+            st.success("Comando ejecutado con éxito.")
+        return process
+    except subprocess.CalledProcessError as e:
+        # Si check=True, la excepción es capturada y devuelta
+        error_details = f"Error al ejecutar el comando (código: {e.returncode})"
+        if e.stdout:
+            error_details += f"\n--- Salida (stdout) ---\n{e.stdout}"
+        if e.stderr:
+            error_details += f"\n--- Error (stderr) ---\n{e.stderr}"
+        st.error(error_details)
+        return e
+
 # --- Funciones de Resumen ---
 def mostrar_resumen(nombre_tabla, columna_grupo, titulo, nombre_col_grupo, nombre_col_total):
     st.subheader(titulo)
@@ -168,3 +207,71 @@ if st.button("Procesar y Cargar Datos"):
         if os.path.exists(temp_filepath):
             os.remove(temp_filepath)
             st.info(f"Archivo temporal `{temp_filename}` eliminado.")
+
+# --- Paso 5: Finalizar Actualización ---
+st.header("Paso 5: Finalizar Actualización")
+st.warning("Asegúrate de que todos los datos se hayan cargado correctamente antes de finalizar.")
+
+if st.button("Finalizar actualización"):
+    st.info("Iniciando el proceso para guardar los cambios en el repositorio...")
+
+    # Determinar la ruta relativa de la DB para el comando git
+    db_relative_path = os.path.relpath(DB_PATH, BASE_DIR)
+
+    # --- 1. Git Add ---
+    st.subheader("Paso 5.1: Agregando la base de datos al área de preparación (git add)")
+    add_process = ejecutar_comando_shell(f"git add {db_relative_path}", cwd=BASE_DIR)
+
+    if isinstance(add_process, subprocess.CompletedProcess):
+        
+        # --- 2. Configurar usuario de Git ---
+        st.subheader("Paso 5.2: Configurando usuario de Git")
+        user_name = "sgaribottounsam"
+        user_email = "sgaribotto@unsam.edu.ar"
+        
+        config_user_proc = ejecutar_comando_shell(f'git config user.name "{user_name}"', cwd=BASE_DIR)
+        config_email_proc = ejecutar_comando_shell(f'git config user.email "{user_email}"', cwd=BASE_DIR)
+
+        if isinstance(config_user_proc, subprocess.CompletedProcess) and isinstance(config_email_proc, subprocess.CompletedProcess):
+            
+            # --- 3. Git Commit ---
+            st.subheader("Paso 5.3: Creando el commit (git commit)")
+            timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            commit_message = f"Actualización de la base de datos {timestamp}"
+            commit_message_shell = commit_message.replace('"', '\\"')
+            
+            # Ejecutamos commit sin 'check=True' para manejar el caso "no changes"
+            commit_process = ejecutar_comando_shell(f'git commit -m "{commit_message_shell}"', cwd=BASE_DIR, check=False)
+            
+            commit_ok = False
+            if commit_process.returncode == 0:
+                st.success("Commit creado con éxito.")
+                st.info(f"Salida:\n{commit_process.stdout}")
+                commit_ok = True
+            # Si el commit falla porque no hay cambios, también lo consideramos "ok" para hacer push
+            elif "no changes added to commit" in commit_process.stdout or "sin cambios agregados al commit" in commit_process.stdout:
+                st.warning("No se encontraron nuevos cambios para confirmar. Se intentará hacer push del commit anterior.")
+                st.info(f"Salida de Git:\n{commit_process.stdout}")
+                commit_ok = True
+            else:
+                # Otro tipo de error en el commit
+                error_details = f"Error al ejecutar git commit (código: {commit_process.returncode})"
+                if commit_process.stdout:
+                    error_details += f"\n--- Salida (stdout) ---\n{commit_process.stdout}"
+                if commit_process.stderr:
+                    error_details += f"\n--- Error (stderr) ---\n{commit_process.stderr}"
+                st.error(error_details)
+
+            if commit_ok:
+                # --- 4. Git Push ---
+                st.subheader("Paso 5.4: Subiendo los cambios al repositorio (git push)")
+                
+                pat = "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"
+                user = "sgaribottounsam"
+                remote_url = "https://github.com/sgaribottounsam/eeyn-dashboard.git"
+                push_url = f"https://{user}:{pat}@{remote_url.split('//')[1]}"
+                
+                push_process = ejecutar_comando_shell(f"git push {push_url}", cwd=BASE_DIR)
+                if isinstance(push_process, subprocess.CompletedProcess):
+                    st.balloons()
+                    st.success("¡Actualización completada y subida al repositorio!")

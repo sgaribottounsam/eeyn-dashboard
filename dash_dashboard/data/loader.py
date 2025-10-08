@@ -235,3 +235,74 @@ def cargar_inscripciones_por_anio_carrera():
         print(f"Error al consultar la base de datos para inscripciones por año/carrera: {e}")
         return pd.DataFrame()
 
+def cargar_documentacion_por_dia():
+    """
+    Carga la evolución de la recepción de documentación por día y estado.
+    """
+    db_path = os.path.join(project_root, 'data', 'base_de_datos', 'academica.db')
+    
+    query = """
+        SELECT
+            DATE(marca_temporal) as fecha,
+            CASE
+                WHEN estado_documentacin IS NULL OR estado_documentacin = '' OR estado_documentacin = 'Para revisar' THEN 'Revisar'
+                ELSE estado_documentacin
+            END as estado_agrupado,
+            COUNT(*) as cantidad
+        FROM docu_inscripciones
+        WHERE marca_temporal >= '2025-10-01'
+        GROUP BY fecha, estado_agrupado
+        ORDER BY fecha, estado_agrupado;
+    """
+    try:
+        conn = sqlite3.connect(db_path)
+        df = pd.read_sql_query(query, conn)
+        conn.close()
+        
+        # Pivotear la tabla para tener los estados como columnas
+        df_pivot = df.pivot_table(index='fecha', columns='estado_agrupado', values='cantidad', fill_value=0).reset_index()
+        
+        # Asegurarse de que todas las columnas de estado esperadas existan
+        estados_esperados = ['Aprobada', 'Rechazada', 'Duplicado', 'Revisar']
+        for estado in estados_esperados:
+            if estado not in df_pivot.columns:
+                df_pivot[estado] = 0
+        
+        print("-> Datos de documentación por día cargados desde la BD.")
+        return df_pivot
+    except Exception as e:
+        print(f"Error al consultar la base de datos para documentación por día: {e}")
+        return pd.DataFrame()
+
+def cargar_inscriptos_grado_y_pregrado_por_dia():
+    """
+    Carga la evolución de inscriptos de grado y pregrado por día directamente desde la BD,
+    filtrando para los años y fechas de interés.
+    """
+    db_path = os.path.join(project_root, 'data', 'base_de_datos', 'academica.db')
+    
+    query = """
+        SELECT
+            ic.anio, -- Usar el año académico correcto
+            strftime('%m-%d', ic.fecha_insc) AS dia_mes,
+            COUNT(DISTINCT ic.n_documento) AS cantidad
+        FROM inscripciones_carreras AS ic
+        JOIN propuestas AS p ON ic.carrera = p.codigo
+        WHERE ic.anio >= 2024 -- Filtrar por año académico
+          AND p.tipo IN ('Grado', 'Pregrado')
+          AND (
+            (strftime('%m', ic.fecha_insc) = '10') OR
+            (strftime('%m', ic.fecha_insc) = '11' AND strftime('%d', ic.fecha_insc) <= '15')
+          )
+        GROUP BY ic.anio, dia_mes
+        ORDER BY ic.anio, dia_mes;
+    """
+    try:
+        conn = sqlite3.connect(db_path)
+        df = pd.read_sql_query(query, conn)
+        conn.close()
+        print("-> Datos de inscriptos diarios de grado y pregrado cargados desde la BD.")
+        return df
+    except Exception as e:
+        print(f"Error al consultar la base de datos para inscriptos diarios de grado y pregrado: {e}")
+        return pd.DataFrame()

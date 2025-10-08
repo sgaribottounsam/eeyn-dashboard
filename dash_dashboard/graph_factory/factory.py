@@ -292,3 +292,91 @@ def crear_grafico_inscripciones_por_anio_carrera(df):
         plot_bgcolor='white'
     )
     return fig
+
+def crear_grafico_documentacion_por_dia(df):
+    """
+    Crea un gráfico de barras apiladas de la recepción de documentación por día.
+    """
+    if df.empty:
+        return crear_grafico_vacio("Evolución de la Recepción de Documentación")
+
+    # Los datos ya vienen pivotados desde el loader
+    # Columnas esperadas: fecha, Aprobada, Rechazada, Duplicado, Revisar
+    
+    # Calcular el total por día
+    df['Total'] = df[['Aprobada', 'Rechazada', 'Duplicado', 'Revisar']].sum(axis=1)
+
+    fig = px.bar(
+        df,
+        x='fecha',
+        y=['Aprobada', 'Rechazada', 'Duplicado', 'Revisar'],
+        title='📂 Evolución de la Recepción de Documentación por Día',
+        labels={'fecha': 'Fecha', 'value': 'Cantidad de Documentos', 'variable': 'Estado'},
+        barmode='stack',
+        color_discrete_map={
+            'Aprobada': '#28a745',
+            'Rechazada': '#dc3545',
+            'Duplicado': '#007bff',  # Azul
+            'Revisar': '#ffc107'   # Amarillo
+        }
+    )
+
+    # Agregar etiquetas con el total
+    fig.add_trace(go.Scatter(
+        x=df['fecha'],
+        y=df['Total'],
+        text=df['Total'],
+        mode='text',
+        textposition='top center',
+        textfont=dict(color='black', size=11),
+        showlegend=False
+    ))
+
+    fig.update_layout(
+        height=GRAPH_HEIGHT,
+        plot_bgcolor='white',
+        xaxis_title="Fecha",
+        yaxis_title="Cantidad de Documentos",
+        legend_title_text='Estado',
+        yaxis_range=[0, df['Total'].max() * 1.15] # Ajustar el rango del eje Y
+    )
+    
+    return fig
+
+def crear_grafico_inscriptos_grado_y_pregrado_por_dia(df):
+    """
+    Crea un gráfico de barras que muestra el total de inscriptos de grado y pregrado por día.
+    Compara los años a partir de 2024 en el período del 1 de octubre al 15 de noviembre.
+    """
+    if df.empty:
+        return crear_grafico_vacio("No hay datos de inscripciones para mostrar.")
+
+    fig = go.Figure()
+
+    df['anio'] = df['anio'].astype(str)
+    df_pivot = df.pivot_table(index='dia_mes', columns='anio', values='cantidad', aggfunc='sum').fillna(0)
+    
+    df_pivot.sort_index(inplace=True)
+
+    for year in sorted(df_pivot.columns):
+        x_axis_labels = [pd.to_datetime(f"1900-{day_month}").strftime('%d-%b') for day_month in df_pivot.index]
+
+        fig.add_trace(go.Bar(
+            x=x_axis_labels,
+            y=df_pivot[year],
+            name=year,
+            text=df_pivot[year],
+            textposition='auto'
+        ))
+
+    fig.update_layout(
+        title_text='Inscriptos de Grado y Pregrado por Día',
+        xaxis_title='Fecha',
+        yaxis_title='Total de Inscriptos',
+        legend_title='Año',
+        height=GRAPH_HEIGHT,
+        plot_bgcolor='white',
+        barmode='group'
+    )
+
+    return fig

@@ -106,3 +106,6 @@ venv.bak/
 data/procesados/
 _output/
 data/crudos/*_temp_*.xlsx
+/data/crudos/*.csv
+/data/crudos/*.xls
+/data/crudos/*.xlsx

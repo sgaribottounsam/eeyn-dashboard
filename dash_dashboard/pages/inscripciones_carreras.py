@@ -12,10 +12,14 @@ from ..app import app
 from ..data.loader import (
     cargar_inscriptos_grado_por_dia,
     cargar_inscripciones_por_anio_carrera,
+    cargar_documentacion_por_dia,
+    cargar_inscriptos_grado_y_pregrado_por_dia, # Add this
 )
 from ..graph_factory.factory import (
     crear_grafico_inscriptos_grado_por_dia,
     crear_grafico_inscripciones_por_anio_carrera,
+    crear_grafico_documentacion_por_dia,
+    crear_grafico_inscriptos_grado_y_pregrado_por_dia, # Add this
     COLORES_CARRERAS # <-- IMPORTAMOS EL DICCIONARIO DE COLORES
 )
 
@@ -115,6 +119,50 @@ def get_total_inscripciones_grado_pregrado():
         conn.close()
     return total
 
+def get_total_documentacion_recibida():
+    """Obtiene el total de filas en la tabla docu_inscripciones."""
+    conn = sqlite3.connect(DB_PATH)
+    try:
+        query = "SELECT COUNT(*) FROM docu_inscripciones"
+        total = pd.read_sql_query(query, conn).iloc[0, 0]
+    except (IndexError, sqlite3.OperationalError) as e:
+        print(f"Error al calcular KPI 'Total Documentación Recibida': {e}")
+        total = "N/A"
+    finally:
+        conn.close()
+    return total
+
+def get_tasa_aprobacion_documentacion():
+    """Calcula la tasa de aprobación de la documentación."""
+    conn = sqlite3.connect(DB_PATH)
+    try:
+        # Usamos un solo query para eficiencia
+        query = "SELECT estado_documentacin, COUNT(*) as count FROM docu_inscripciones WHERE estado_documentacin IN ('Aprobada', 'Rechazada', 'Duplicado') GROUP BY estado_documentacin"
+        df = pd.read_sql_query(query, conn)
+        
+        counts = df.set_index('estado_documentacin')['count'].to_dict()
+        aprobadas = counts.get('Aprobada', 0)
+        rechazadas = counts.get('Rechazada', 0)
+        duplicados = counts.get('Duplicado', 0)
+
+        total_evaluadas = aprobadas + rechazadas + duplicados
+        
+        if total_evaluadas == 0:
+            tasa = 0
+        else:
+            tasa = (aprobadas / total_evaluadas) * 100
+            
+    except (IndexError, sqlite3.OperationalError) as e:
+        print(f"Error al calcular KPI 'Tasa Aprobación Documentación': {e}")
+        tasa = "N/A"
+    finally:
+        conn.close()
+    
+    if isinstance(tasa, (int, float)):
+        return f"{tasa:.2f}%"
+    else:
+        return tasa
+
 # --- Definiciones de KPIs ---
 kpi_definitions = {
     "Inscripciones Grado + Pregrado": get_total_inscripciones_grado_pregrado,
@@ -122,6 +170,8 @@ kpi_definitions = {
     "Total Fichas Guaraní": get_total_fichas_guarani,
     "Inscripciones a Carreras de Pregrado": get_total_inscripciones_pregrado,
     "Tasa de Procesamiento": get_tasa_de_procesamiento,
+    "Total Documentación Recibida": get_total_documentacion_recibida,
+    "Tasa Aprobación Documentación": get_tasa_aprobacion_documentacion,
 }
 kpi_names = list(kpi_definitions.keys())
 initial_indices = list(range(4))
@@ -188,6 +238,8 @@ def grafico_inscriptos_grado_2026():
 # --- Carga de Datos para gráficos no dinámicos ---
 df_inscriptos_grado_dia = cargar_inscriptos_grado_por_dia()
 df_insc_anio_carrera = cargar_inscripciones_por_anio_carrera()
+df_docu_por_dia = cargar_documentacion_por_dia()
+df_inscriptos_grado_y_pregrado_por_dia = cargar_inscriptos_grado_y_pregrado_por_dia()
 
 # --- Filtrado para el gráfico de evolución de inscriptos ---
 hoy = datetime.now()
@@ -216,6 +268,10 @@ layout = html.Div([
     html.Div(className="row", children=[
         html.Div([dcc.Graph(figure=grafico_distribucion_estado())], className="six columns"),
         html.Div([dcc.Graph(figure=grafico_inscriptos_grado_2026())], className="six columns"),
+    ]),
+    html.Div(className="row", children=[
+        html.Div([dcc.Graph(figure=crear_grafico_documentacion_por_dia(df_docu_por_dia))], className="six columns"),
+        html.Div([dcc.Graph(figure=crear_grafico_inscriptos_grado_y_pregrado_por_dia(df_inscriptos_grado_y_pregrado_por_dia))], className="six columns"),
     ]),
 ])
 

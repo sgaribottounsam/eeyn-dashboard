@@ -22,6 +22,15 @@ def importar_documentacion_inscripciones():
     try:
         df = pd.read_csv(CSV_FILEPATH, encoding='utf-8')
         df['dni'] = df['dni'].astype(str)
+
+        # Convertir 'marca_temporal' a formato de fecha (YYYY-MM-DD)
+        if 'marca_temporal' in df.columns:
+            print("-> Convirtiendo la columna 'marca_temporal' a formato de fecha (YYYY-MM-DD)...")
+            df['marca_temporal'] = pd.to_datetime(df['marca_temporal'], format='%d/%m/%Y %H:%M:%S', errors='coerce').dt.strftime('%Y-%m-%d')
+            # Eliminar filas donde la conversión de fecha resultó en NaT (Not a Time)
+            df.dropna(subset=['marca_temporal'], inplace=True)
+            print("-> Conversión completa.")
+
         print(f"-> Archivo CSV cargado con {len(df)} registros.")
     except Exception as e:
         print(f"Ocurrió un error al leer o procesar el archivo CSV: {e}")

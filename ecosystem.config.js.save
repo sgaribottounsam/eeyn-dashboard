@@ -1,0 +1,12 @@
+module.exports = {
+  apps: [{
+    name: "uploader-local-dash",      // Nombre de la aplicación en PM2
+    script: "streamlit",            // El comando a ejecutar
+    args: "run app.py",             // Argumentos para el comando 'streamlit'
+    interpreter: "/home/santiago/it/.venv/bin/python", // ¡La clave está aquí!
+    watch: false,                   // Desactiva el 'watch' para producción
+    env: {
+      "STREAMLIT_SERVER_PORT": "8501" // Puedes definir variables de entorno aquí
+    }
+  }]
+};

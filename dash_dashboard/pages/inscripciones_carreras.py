@@ -167,11 +167,12 @@ def get_tasa_aprobacion_documentacion():
 kpi_definitions = {
     "Inscripciones Grado + Pregrado": get_total_inscripciones_grado_pregrado,
     "Inscripciones a Carreras de Grado": get_total_inscripciones_grado,
+    "Total Documentación Recibida": get_total_documentacion_recibida,
     "Total Fichas Guaraní": get_total_fichas_guarani,
     "Inscripciones a Carreras de Pregrado": get_total_inscripciones_pregrado,
-    "Tasa de Procesamiento": get_tasa_de_procesamiento,
-    "Total Documentación Recibida": get_total_documentacion_recibida,
     "Tasa Aprobación Documentación": get_tasa_aprobacion_documentacion,
+    "Tasa de Procesamiento": get_tasa_de_procesamiento, 
+    
 }
 kpi_names = list(kpi_definitions.keys())
 initial_indices = list(range(4))

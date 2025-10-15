@@ -3,6 +3,8 @@ GEMINI.md
 database_schema.md
 /.venv/
 /especificaciones/
+ecosystem.config.js
+data/crudos/gemini.jpeg
 
 .gemini/
 gha-creds-*.json

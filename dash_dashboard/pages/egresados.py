@@ -1,4 +1,5 @@
-from dash import dcc, html, Input, Output, State, ctx, dash
+from dash import dcc, html, Input, Output, State, ctx, dash, MATCH
+import dash_bootstrap_components as dbc
 import json
 
 # Importamos la instancia de la app
@@ -55,12 +56,44 @@ layout = html.Div([
 
     # Filas de gráficos
     html.Div([
-        html.Div([dcc.Graph(figure=crear_grafico_evolucion_egresados(df_evolucion_egresados))], className="six columns"),
-        html.Div([dcc.Graph(figure=crear_grafico_cantidad_graduados_por_plan(df_egresados_tasa))], className="six columns"),
+        # Gráfico 1
+        html.Div([
+            dcc.Graph(id={'type': 'graph-egr', 'index': 'evolucion'}, figure=crear_grafico_evolucion_egresados(df_evolucion_egresados)),
+            dbc.Button("Ampliar", id={'type': 'btn-modal-egr', 'index': 'evolucion'}, className="btn-sm float-end"),
+            dbc.Modal([
+                dbc.ModalHeader(dbc.ModalTitle("Evolución de Egresados")),
+                dbc.ModalBody(dcc.Graph(id={'type': 'modal-graph-egr', 'index': 'evolucion'}, figure=crear_grafico_evolucion_egresados(df_evolucion_egresados), style={'height': '80vh'}))
+            ], id={'type': 'modal-egr', 'index': 'evolucion'}, size="xl", is_open=False)
+        ], className="six columns position-relative"),
+        # Gráfico 2
+        html.Div([
+            dcc.Graph(id={'type': 'graph-egr', 'index': 'graduados-plan'}, figure=crear_grafico_cantidad_graduados_por_plan(df_egresados_tasa)),
+            dbc.Button("Ampliar", id={'type': 'btn-modal-egr', 'index': 'graduados-plan'}, className="btn-sm float-end"),
+            dbc.Modal([
+                dbc.ModalHeader(dbc.ModalTitle("Cantidad de Graduados por Plan")),
+                dbc.ModalBody(dcc.Graph(id={'type': 'modal-graph-egr', 'index': 'graduados-plan'}, figure=crear_grafico_cantidad_graduados_por_plan(df_egresados_tasa), style={'height': '80vh'}))
+            ], id={'type': 'modal-egr', 'index': 'graduados-plan'}, size="xl", is_open=False)
+        ], className="six columns position-relative"),
     ], className="row"),
     html.Div([
-        html.Div([dcc.Graph(figure=crear_grafico_tasa_graduacion(df_egresados_tasa))], className="six columns"),
-        html.Div([dcc.Graph(figure=crear_grafico_duracion_carrera(df_egresados))], className="six columns"),
+        # Gráfico 3
+        html.Div([
+            dcc.Graph(id={'type': 'graph-egr', 'index': 'tasa-graduacion'}, figure=crear_grafico_tasa_graduacion(df_egresados_tasa)),
+            dbc.Button("Ampliar", id={'type': 'btn-modal-egr', 'index': 'tasa-graduacion'}, className="btn-sm float-end"),
+            dbc.Modal([
+                dbc.ModalHeader(dbc.ModalTitle("Tasa de Graduación")),
+                dbc.ModalBody(dcc.Graph(id={'type': 'modal-graph-egr', 'index': 'tasa-graduacion'}, figure=crear_grafico_tasa_graduacion(df_egresados_tasa), style={'height': '80vh'}))
+            ], id={'type': 'modal-egr', 'index': 'tasa-graduacion'}, size="xl", is_open=False)
+        ], className="six columns position-relative"),
+        # Gráfico 4
+        html.Div([
+            dcc.Graph(id={'type': 'graph-egr', 'index': 'duracion-carrera'}, figure=crear_grafico_duracion_carrera(df_egresados)),
+            dbc.Button("Ampliar", id={'type': 'btn-modal-egr', 'index': 'duracion-carrera'}, className="btn-sm float-end"),
+            dbc.Modal([
+                dbc.ModalHeader(dbc.ModalTitle("Duración de Carrera")),
+                dbc.ModalBody(dcc.Graph(id={'type': 'modal-graph-egr', 'index': 'duracion-carrera'}, figure=crear_grafico_duracion_carrera(df_egresados), style={'height': '80vh'}))
+            ], id={'type': 'modal-egr', 'index': 'duracion-carrera'}, size="xl", is_open=False)
+        ], className="six columns position-relative"),
     ], className="row"),
 
     # Almacenamiento invisible para los índices de todos los KPIs
@@ -106,3 +139,13 @@ def update_all_kpis_egr(n0, n1, n2, n3, current_indices):
     
     return new_titles + new_values + [new_indices]
 
+@app.callback(
+    Output({'type': 'modal-egr', 'index': MATCH}, 'is_open'),
+    Input({'type': 'btn-modal-egr', 'index': MATCH}, 'n_clicks'),
+    State({'type': 'modal-egr', 'index': MATCH}, 'is_open'),
+    prevent_initial_call=True
+)
+def toggle_modal_egr(n_clicks, is_open):
+    if n_clicks:
+        return not is_open
+    return is_open

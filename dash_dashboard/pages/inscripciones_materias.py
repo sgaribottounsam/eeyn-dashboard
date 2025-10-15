@@ -1,4 +1,5 @@
-from dash import dcc, html, Input, Output, State, ctx, dash
+from dash import dcc, html, Input, Output, State, ctx, dash, MATCH
+import dash_bootstrap_components as dbc
 import json
 
 # Importamos la instancia de la app
@@ -53,17 +54,41 @@ layout = html.Div([
         html.Div([
             html.Label("Filtrar estudiantes por:"),
             dcc.RadioItems(id='filtro-estudiantes-insc', options=[{'label': 'Todas', 'value': 'Todas'}, {'label': 'Grado', 'value': 'Grado'}], value='Todas', labelStyle={'display': 'inline-block', 'marginRight': '10px'}),
-            dcc.Graph(id='grafico-estudiantes-carrera')
-        ], className="six columns"),
+            dcc.Graph(id='grafico-estudiantes-carrera'),
+            dbc.Button("Ampliar", id={'type': 'btn-modal-materias', 'index': 'estudiantes-carrera'}, className="btn-sm float-end"),
+            dbc.Modal([
+                dbc.ModalHeader(dbc.ModalTitle("Estudiantes por Carrera")),
+                dbc.ModalBody(dcc.Graph(id={'type': 'modal-graph-materias', 'index': 'estudiantes-carrera'}, style={'height': '80vh'}))
+            ], id={'type': 'modal-materias', 'index': 'estudiantes-carrera'}, size="xl", is_open=False)
+        ], className="six columns position-relative"),
         html.Div([
             html.Label("Filtrar evolución por:"),
             dcc.RadioItems(id='filtro-evolucion-insc', options=[{'label': 'Todas', 'value': 'Todas'}, {'label': 'Grado', 'value': 'Grado'}], value='Todas', labelStyle={'display': 'inline-block', 'marginRight': '10px'}),
-            dcc.Graph(id='grafico-evolucion-temporal')
-        ], className="six columns"),
+            dcc.Graph(id='grafico-evolucion-temporal'),
+            dbc.Button("Ampliar", id={'type': 'btn-modal-materias', 'index': 'evolucion-temporal'}, className="btn-sm float-end"),
+            dbc.Modal([
+                dbc.ModalHeader(dbc.ModalTitle("Evolución Temporal")),
+                dbc.ModalBody(dcc.Graph(id={'type': 'modal-graph-materias', 'index': 'evolucion-temporal'}, style={'height': '80vh'}))
+            ], id={'type': 'modal-materias', 'index': 'evolucion-temporal'}, size="xl", is_open=False)
+        ], className="six columns position-relative"),
     ], className="row"),
     html.Div([
-        html.Div([dcc.Graph(id='grafico-insc-cuatri')], className="six columns"),
-        html.Div([dcc.Graph(id='grafico-cpu')], className="six columns"),
+        html.Div([
+            dcc.Graph(id='grafico-insc-cuatri'),
+            dbc.Button("Ampliar", id={'type': 'btn-modal-materias', 'index': 'insc-cuatri'}, className="btn-sm float-end"),
+            dbc.Modal([
+                dbc.ModalHeader(dbc.ModalTitle("Inscripciones por Cuatrimestre")),
+                dbc.ModalBody(dcc.Graph(id={'type': 'modal-graph-materias', 'index': 'insc-cuatri'}, style={'height': '80vh'}))
+            ], id={'type': 'modal-materias', 'index': 'insc-cuatri'}, size="xl", is_open=False)
+        ], className="six columns position-relative"),
+        html.Div([
+            dcc.Graph(id='grafico-cpu'),
+            dbc.Button("Ampliar", id={'type': 'btn-modal-materias', 'index': 'cpu'}, className="btn-sm float-end"),
+            dbc.Modal([
+                dbc.ModalHeader(dbc.ModalTitle("Materias CPU")),
+                dbc.ModalBody(dcc.Graph(id={'type': 'modal-graph-materias', 'index': 'cpu'}, style={'height': '80vh'}))
+            ], id={'type': 'modal-materias', 'index': 'cpu'}, size="xl", is_open=False)
+        ], className="six columns position-relative"),
     ], className="row"),
     dcc.Store(id='kpi-indices-insc', data=initial_indices)
 ])
@@ -109,25 +134,55 @@ def update_all_kpis(n0, n1, n2, n3, current_indices):
 
 
 # Callbacks de los gráficos (sin cambios)
-@app.callback(Output('grafico-estudiantes-carrera', 'figure'), [Input('filtro-estudiantes-insc', 'value')])
+@app.callback(
+    [Output('grafico-estudiantes-carrera', 'figure'),
+     Output({'type': 'modal-graph-materias', 'index': 'estudiantes-carrera'}, 'figure')],
+    [Input('filtro-estudiantes-insc', 'value')]
+)
 def update_grafico_estudiantes(filtro_tipo):
     df = df_grado if filtro_tipo == 'Grado' else df_todas
-    return crear_grafico_estudiantes_por_carrera(df, filtro_tipo)
+    figure = crear_grafico_estudiantes_por_carrera(df, filtro_tipo)
+    return figure, figure
 
-@app.callback(Output('grafico-evolucion-temporal', 'figure'), [Input('filtro-evolucion-insc', 'value')])
+@app.callback(
+    [Output('grafico-evolucion-temporal', 'figure'),
+     Output({'type': 'modal-graph-materias', 'index': 'evolucion-temporal'}, 'figure')],
+    [Input('filtro-evolucion-insc', 'value')]
+)
 def update_grafico_evolucion(filtro_tipo):
     df = df_grado if filtro_tipo == 'Grado' else df_todas
-    return crear_grafico_evolucion_temporal(df, filtro_tipo)
+    figure = crear_grafico_evolucion_temporal(df, filtro_tipo)
+    return figure, figure
 
-@app.callback(Output('grafico-insc-cuatri', 'figure'), [Input('url', 'pathname')])
+@app.callback(
+    [Output('grafico-insc-cuatri', 'figure'),
+     Output({'type': 'modal-graph-materias', 'index': 'insc-cuatri'}, 'figure')],
+    [Input('url', 'pathname')]
+)
 def update_grafico_insc_cuatri(pathname):
     if pathname == '/inscripciones-materias':
-        return crear_grafico_inscripciones_cuatrimestre(df_todas)
-    return crear_grafico_vacio()
+        figure = crear_grafico_inscripciones_cuatrimestre(df_todas)
+        return figure, figure
+    return crear_grafico_vacio(), crear_grafico_vacio()
 
-@app.callback(Output('grafico-cpu', 'figure'), [Input('url', 'pathname')])
+@app.callback(
+    [Output('grafico-cpu', 'figure'),
+     Output({'type': 'modal-graph-materias', 'index': 'cpu'}, 'figure')],
+    [Input('url', 'pathname')]
+)
 def update_grafico_cpu(pathname):
     if pathname == '/inscripciones-materias':
-        return crear_grafico_cpu_materias(df_cpu_mat)
-    return crear_grafico_vacio()
+        figure = crear_grafico_cpu_materias(df_cpu_mat)
+        return figure, figure
+    return crear_grafico_vacio(), crear_grafico_vacio()
 
+@app.callback(
+    Output({'type': 'modal-materias', 'index': MATCH}, 'is_open'),
+    Input({'type': 'btn-modal-materias', 'index': MATCH}, 'n_clicks'),
+    State({'type': 'modal-materias', 'index': MATCH}, 'is_open'),
+    prevent_initial_call=True
+)
+def toggle_modal_materias(n_clicks, is_open):
+    if n_clicks:
+        return not is_open
+    return is_open

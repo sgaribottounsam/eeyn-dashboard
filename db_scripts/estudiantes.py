@@ -103,7 +103,7 @@ def importar_estudiantes(csv_filepath, db_filepath, table_name):
 
 if __name__ == '__main__':
     # Usamos las rutas relativas desde la raíz del proyecto
-    procesar = 'estudiantes'  # Cambiar a 'aspirantes' para procesar aspirantes
+    procesar = 'aspirantes'  # Cambiar a 'aspirantes' para procesar aspirantes
     
     if procesar == 'aspirantes':
         csv_input_path = 'data/procesados/CPU_procesados.csv'

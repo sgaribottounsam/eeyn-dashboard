@@ -65,7 +65,7 @@ def procesar_reporte_academico(input_filepath, output_filepath):
 
 if __name__ == '__main__':
     
-    limpiar = 'estudiantes'
+    limpiar = 'aspirantes'  # Cambiar a 'estudiantes' para procesar estudiantes
     if limpiar == 'estudiantes':
         input_path = 'data/crudos/Grado_pregrado_todos.xlsx'
         output_path = 'data/procesados/Grado_pregrado_procesado.csv'

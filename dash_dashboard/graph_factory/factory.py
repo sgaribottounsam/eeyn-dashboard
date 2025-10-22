@@ -275,6 +275,9 @@ def crear_grafico_inscripciones_por_anio_carrera(df):
     if df.empty:
         return crear_grafico_vacio("No hay datos de inscripciones por año y carrera.")
 
+    # Calcular totales por año para las etiquetas
+    df_totales = df.groupby('anio')['cantidad'].sum().reset_index()
+
     fig = px.bar(
         df,
         x='anio',
@@ -287,9 +290,21 @@ def crear_grafico_inscripciones_por_anio_carrera(df):
         color_discrete_map=COLORES_CARRERAS
     )
 
+    # Agregar etiquetas con el total
+    fig.add_trace(go.Scatter(
+        x=df_totales['anio'],
+        y=df_totales['cantidad'],
+        text=df_totales['cantidad'],
+        mode='text',
+        textposition='top center',
+        textfont=dict(color='black', size=11),
+        showlegend=False
+    ))
+
     fig.update_layout(
         height=GRAPH_HEIGHT,
-        plot_bgcolor='white'
+        plot_bgcolor='white',
+        yaxis_range=[0, df_totales['cantidad'].max() * 1.15] # Ajustar el rango del eje Y
     )
     return fig
 

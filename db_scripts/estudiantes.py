@@ -2,15 +2,11 @@ import pandas as pd
 import sqlite3
 import os
 import re
+import sys
 
-def to_snake_case(name):
-    """Convierte un string a formato snake_case, manejando acentos y caracteres comunes."""
-    name = name.strip()
-    name = re.sub(r'[\s\.\/\(\)]+', '_', name) # Reemplaza espacios y otros separadores por _
-    name = re.sub(r'[ÁÉÍÓÚáéíóú]', lambda m: {'Á':'a','É':'e','Í':'i','Ó':'o','Ú':'u','á':'a','é':'e','í':'i','ó':'o','ú':'u'}[m.group(0)], name)
-    name = re.sub(r'[^a-zA-Z0-9_]', '', name) # Elimina caracteres no alfanuméricos restantes
-    return name.lower()
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from utils.text_utils import to_snake_case
 def importar_estudiantes(csv_filepath, db_filepath, table_name):
     """
     Importa datos de estudiantes desde un CSV (con columnas ya en snake_case)
@@ -46,7 +42,7 @@ def importar_estudiantes(csv_filepath, db_filepath, table_name):
     create_table_query = f"""
     CREATE TABLE IF NOT EXISTS {table_name} (
         apellido_y_nombre TEXT,
-        tipo_y_no_documento TEXT,
+        tipo_y_n_documento TEXT,
         fecha_de_nacimiento TEXT,
         email TEXT,
         telefono TEXT,
@@ -62,7 +58,7 @@ def importar_estudiantes(csv_filepath, db_filepath, table_name):
         total_actividades INTEGER,
         estado_inscripcion TEXT,
         carrera TEXT,
-        PRIMARY KEY (tipo_y_no_documento, carrera)
+        PRIMARY KEY (tipo_y_n_documento, carrera)
     );
     """
     try:

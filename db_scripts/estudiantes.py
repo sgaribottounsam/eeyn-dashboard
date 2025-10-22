@@ -11,7 +11,7 @@ def to_snake_case(name):
     name = re.sub(r'[^a-zA-Z0-9_]', '', name) # Elimina caracteres no alfanuméricos restantes
     return name.lower()
 
-def importar_estudiantes(csv_filepath, db_filepath, table_name='estudiantes'):
+def importar_estudiantes(csv_filepath, db_filepath, table_name):
     """
     Importa datos de estudiantes desde un CSV (con columnas ya en snake_case)
     a una tabla SQLite. Si un registro ya existe (basado en la llave primaria),
@@ -107,7 +107,15 @@ def importar_estudiantes(csv_filepath, db_filepath, table_name='estudiantes'):
 
 if __name__ == '__main__':
     # Usamos las rutas relativas desde la raíz del proyecto
-    csv_input_path = 'data/procesados/CPU_procesados.csv'
-    db_output_path = 'data/base_de_datos/academica.db'
-    importar_estudiantes(csv_input_path, db_output_path, 'aspirantes')
+    procesar = 'estudiantes'  # Cambiar a 'aspirantes' para procesar aspirantes
+    
+    if procesar == 'aspirantes':
+        csv_input_path = 'data/procesados/CPU_procesados.csv'
+        db_output_path = 'data/base_de_datos/academica.db'
+        table = 'aspirantes'
+    if procesar == 'estudiantes':
+        csv_input_path = 'data/procesados/Grado_pregrado_procesado.csv'
+        db_output_path = 'data/base_de_datos/academica.db'
+        table = 'estudiantes'
+    importar_estudiantes(csv_input_path, db_output_path, table)
 

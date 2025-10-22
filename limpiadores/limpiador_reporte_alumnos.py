@@ -67,11 +67,15 @@ def procesar_reporte_academico(input_filepath, output_filepath):
         print(f"Ocurrió un error al guardar el archivo: {e}")
 
 if __name__ == '__main__':
-    #input_path = 'data/crudos/Grado_pregrado_todos.xlsx'
-    #output_path = 'data/procesados/Grado_pregrado_procesado.csv'
     
-    input_path = 'data/crudos/CPU_todos.xlsx'
-    output_path = 'data/procesados/CPU_procesados.csv'
+    limpiar = 'estudiantes'
+    if limpiar == 'estudiantes':
+        input_path = 'data/crudos/Grado_pregrado_todos.xlsx'
+        output_path = 'data/procesados/Grado_pregrado_procesado.csv'
+    
+    if limpiar == 'aspirantes':
+        input_path = 'data/crudos/CPU_todos.xlsx'
+        output_path = 'data/procesados/CPU_procesados.csv'
     
     procesar_reporte_academico(input_path, output_path)
 

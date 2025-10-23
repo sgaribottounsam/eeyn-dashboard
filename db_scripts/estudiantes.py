@@ -18,6 +18,9 @@ def importar_estudiantes(csv_filepath, db_filepath, table_name):
     try:
         df = pd.read_csv(csv_filepath, encoding='utf-8')
         df.dropna(how='all', inplace=True)
+        # --- FIX: Convertir explicitamente la columna 'ano_ingreso' a entero ---
+        if 'ano_ingreso' in df.columns:
+            df['ano_ingreso'] = pd.to_numeric(df['ano_ingreso'], errors='coerce').fillna(0).astype(int)
         print(f"-> Archivo CSV cargado. Se encontraron {len(df)} registros.")
     except FileNotFoundError:
         print(f"Error: No se encontró el archivo CSV en la ruta: {csv_filepath}")
@@ -69,7 +72,7 @@ def importar_estudiantes(csv_filepath, db_filepath, table_name):
         conn.close()
         return
         
-    registros_a_insertar = [tuple(x) for x in df.to_records(index=False)]
+    registros_a_insertar = list(df.itertuples(index=False, name=None))
     
     column_names = ", ".join([f'"{col}"' for col in df.columns])
     placeholders = ", ".join(["?"] * len(df.columns))
@@ -102,16 +105,23 @@ def importar_estudiantes(csv_filepath, db_filepath, table_name):
     print(f"\n¡Proceso de importación para la tabla '{table_name}' completado!")
 
 if __name__ == '__main__':
-    # Usamos las rutas relativas desde la raíz del proyecto
-    procesar = 'aspirantes'  # Cambiar a 'aspirantes' para procesar aspirantes
+    # --- Procesamiento en Lote ---
+    # Se procesan ambas tablas, aspirantes y estudiantes, una después de la otra.
     
-    if procesar == 'aspirantes':
-        csv_input_path = 'data/procesados/CPU_procesados.csv'
-        db_output_path = 'data/base_de_datos/academica.db'
-        table = 'aspirantes'
-    if procesar == 'estudiantes':
-        csv_input_path = 'data/procesados/Grado_pregrado_procesado.csv'
-        db_output_path = 'data/base_de_datos/academica.db'
-        table = 'estudiantes'
-    importar_estudiantes(csv_input_path, db_output_path, table)
+    configs = [
+        {
+            'csv_input_path': 'data/procesados/CPU_procesados.csv',
+            'db_output_path': 'data/base_de_datos/academica.db',
+            'table': 'aspirantes'
+        },
+        {
+            'csv_input_path': 'data/procesados/Grado_pregrado_procesado.csv',
+            'db_output_path': 'data/base_de_datos/academica.db',
+            'table': 'estudiantes'
+        }
+    ]
+    
+    for config in configs:
+        print(f"\n--- Iniciando para la tabla: {config['table']} ---")
+        importar_estudiantes(config['csv_input_path'], config['db_output_path'], config['table'])
 

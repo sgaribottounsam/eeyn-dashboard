@@ -56,6 +56,10 @@ def procesar_reporte_academico(input_filepath, output_filepath):
     df_procesado = pd.DataFrame(data_rows)
     df_procesado = df_procesado[column_headers]
 
+    # --- FIX: Convertir explicitamente la columna 'ano_ingreso' a entero ---
+    if 'ano_ingreso' in df_procesado.columns:
+        df_procesado['ano_ingreso'] = pd.to_numeric(df_procesado['ano_ingreso'], errors='coerce').fillna(0).astype(int)
+
     try:
         os.makedirs(os.path.dirname(output_filepath), exist_ok=True)
         df_procesado.to_csv(output_filepath, index=False, encoding='utf-8')
@@ -64,15 +68,21 @@ def procesar_reporte_academico(input_filepath, output_filepath):
         print(f"Ocurrió un error al guardar el archivo: {e}")
 
 if __name__ == '__main__':
+    # --- Procesamiento en Lote ---
+    # Se procesan ambos reportes, aspirantes y estudiantes, uno después de la otro.
     
-    limpiar = 'aspirantes'  # Cambiar a 'estudiantes' para procesar estudiantes
-    if limpiar == 'estudiantes':
-        input_path = 'data/crudos/Grado_pregrado_todos.xlsx'
-        output_path = 'data/procesados/Grado_pregrado_procesado.csv'
+    configs = [
+        {
+            'input_path': 'data/crudos/CPU_todos.xlsx',
+            'output_path': 'data/procesados/CPU_procesados.csv'
+        },
+        {
+            'input_path': 'data/crudos/Grado_pregrado_todos.xlsx',
+            'output_path': 'data/procesados/Grado_pregrado_procesado.csv'
+        }
+    ]
     
-    if limpiar == 'aspirantes':
-        input_path = 'data/crudos/CPU_todos.xlsx'
-        output_path = 'data/procesados/CPU_procesados.csv'
-    
-    procesar_reporte_academico(input_path, output_path)
+    for config in configs:
+        print(f"\n--- Iniciando para el archivo: {config['input_path']} ---")
+        procesar_reporte_academico(config['input_path'], config['output_path'])
 

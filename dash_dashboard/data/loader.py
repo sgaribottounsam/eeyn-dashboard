@@ -189,7 +189,7 @@ def cargar_inscriptos_grado_por_dia():
             COUNT(DISTINCT ic.n_documento) AS cantidad
         FROM inscripciones_carreras AS ic
         JOIN propuestas AS p ON ic.carrera = p.codigo
-        WHERE ic.anio >= 2024 -- Filtrar por año académico
+        WHERE ic.anio >= 2025 -- Filtrar por año académico
           AND (
             (strftime('%m', ic.fecha_insc) = '10') OR
             (strftime('%m', ic.fecha_insc) = '11' AND strftime('%d', ic.fecha_insc) <= '15')

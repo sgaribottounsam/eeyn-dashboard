@@ -87,6 +87,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+.streamlit/
 
 # Spyder project settings
 .spyderproject
@@ -111,6 +112,7 @@ data/crudos/*_temp_*.xlsx
 /data/crudos/*.csv
 /data/crudos/*.xls
 /data/crudos/*.xlsx
+/data/procesados/*.csv
 
 # Ignorar archivos zip y pdf en la carpeta de datos crudos
 data/crudos/*.zip

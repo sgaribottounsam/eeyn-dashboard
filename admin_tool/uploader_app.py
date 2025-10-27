@@ -266,12 +266,28 @@ if st.button("Finalizar actualización"):
                 # --- 4. Git Push ---
                 st.subheader("Paso 5.4: Subiendo los cambios al repositorio (git push)")
                 
-                pat = "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"
+                import toml
+                secrets_file_path = os.path.join(BASE_DIR, '.streamlit', 'secrets.toml')
+                pat = None
+                try:
+                    with open(secrets_file_path, 'r') as f:
+                        secrets = toml.load(f)
+                        pat = secrets.get("GIT_TOKEN")
+                    if not pat:
+                        st.error(f"Secreto 'GIT_TOKEN' no encontrado en '{secrets_file_path}'. Por favor, asegúrate de que el archivo existe y contiene `GIT_TOKEN = 'tu_nuevo_token'`.")
+                        st.stop()
+                except FileNotFoundError:
+                    st.error(f"Archivo de secretos no encontrado en '{secrets_file_path}'. Por favor, crea el archivo y añade `GIT_TOKEN = 'tu_nuevo_token'`.")
+                    st.stop()
+                except Exception as e:
+                    st.error(f"Error al leer el archivo de secretos '{secrets_file_path}': {e}")
+                    st.stop()
+
                 user = "sgaribottounsam"
                 remote_url = "https://github.com/sgaribottounsam/eeyn-dashboard.git"
                 push_url = f"https://{user}:{pat}@{remote_url.split('//')[1]}"
                 
                 push_process = ejecutar_comando_shell(f"git push {push_url}", cwd=BASE_DIR)
                 if isinstance(push_process, subprocess.CompletedProcess):
-                    st.balloons()
+                    st.snow()
                     st.success("¡Actualización completada y subida al repositorio!")

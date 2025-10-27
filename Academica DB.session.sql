@@ -1,14 +1,15 @@
 SELECT
-            anio,
-            strftime('%m-%d', fecha_insc) AS dia_mes,
-            COUNT(DISTINCT ic.n_documento) AS cantidad
+            ic.anio, -- Usar el año académico correcto
+            strftime('%m-%d', ic.fecha_insc) AS dia_mes,
+            COUNT(ic.n_documento) AS cantidad
         FROM inscripciones_carreras AS ic
         JOIN propuestas AS p ON ic.carrera = p.codigo
-        WHERE anio >= 2024
+        WHERE ic.anio = 2025 -- Filtrar por año académico
           AND (
-            (strftime('%m', fecha_insc) = '10') OR
-            (strftime('%m', fecha_insc) = '11' AND strftime('%d', fecha_insc) <= '15')
+            (strftime('%m', ic.fecha_insc) = '10') OR
+            (strftime('%m', ic.fecha_insc) = '11') OR
+            (strftime('%m', ic.fecha_insc) = '12' AND strftime('%d', ic.fecha_insc) <= '30')
           )
           AND p.tipo = 'Grado'
-        GROUP BY anio, dia_mes
-        ORDER BY anio, dia_mes
+        GROUP BY ic.anio, dia_mes
+        ORDER BY ic.anio, dia_mes

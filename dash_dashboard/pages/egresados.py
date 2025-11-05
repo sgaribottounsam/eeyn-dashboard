@@ -9,21 +9,47 @@ from ..data.loader import (
     cargar_datos_egresados,
     cargar_egresados_tasa,
     cargar_kpis_egresados,
-    cargar_evolucion_egresados
+    cargar_evolucion_egresados,
+    cargar_egresados_por_tipo,
+    cargar_total_egresados_por_tipo
 )
 from ..graph_factory.factory import (
     crear_grafico_cantidad_graduados_por_plan,
     crear_grafico_tasa_graduacion,
     crear_grafico_duracion_carrera,
-    crear_grafico_evolucion_egresados
+    crear_grafico_evolucion_egresados,
+    crear_grafico_egresados_por_tipo
 )
 
 # --- Carga de datos para la página ---
 df_egresados = cargar_datos_egresados()
 df_egresados_tasa = cargar_egresados_tasa()
 kpis_egr = cargar_kpis_egresados()
-kpi_names_egr = sorted(list(kpis_egr.keys())) if kpis_egr else []
+# Cargar y fusionar los nuevos KPIs
+nuevos_kpis = cargar_total_egresados_por_tipo()
+kpis_egr.update(nuevos_kpis)
+
+# Eliminar el KPI no deseado
+if 'Total de graduados (Grado)' in kpis_egr:
+    del kpis_egr['Total de graduados (Grado)']
+
+# Definir el orden deseado de los KPIs
+kpi_order = [
+    'Total Egresados Grado',
+    'Egresados 2025',
+    'Duración promedio grado',
+    'Tasa de Graduación (grado)',
+    'Total Egresados Posgrado',
+    'Total Egresados Pregrado',
+    'Variación interanual (2023 - 2024)'
+]
+
+# Filtrar y ordenar los nombres de los KPIs
+kpi_names_egr = [kpi for kpi in kpi_order if kpi in kpis_egr]
+
 df_evolucion_egresados = cargar_evolucion_egresados()
+df_egresados_grado = cargar_egresados_por_tipo('Grado')
+df_egresados_posgrado = cargar_egresados_por_tipo('Posgrado')
 
 # --- Función de ayuda para crear tarjetas KPI ---
 def create_kpi_card(card_index, initial_kpi_name, initial_kpi_value):
@@ -93,6 +119,26 @@ layout = html.Div([
                 dbc.ModalHeader(dbc.ModalTitle("Duración de Carrera")),
                 dbc.ModalBody(dcc.Graph(id={'type': 'modal-graph-egr', 'index': 'duracion-carrera'}, figure=crear_grafico_duracion_carrera(df_egresados), style={'height': '80vh'}))
             ], id={'type': 'modal-egr', 'index': 'duracion-carrera'}, size="xl", is_open=False)
+        ], className="six columns position-relative"),
+    ], className="row"),
+    html.Div([
+        # Gráfico 5
+        html.Div([
+            dcc.Graph(id={'type': 'graph-egr', 'index': 'egresados-grado'}, figure=crear_grafico_egresados_por_tipo(df_egresados_grado, 'Grado')),
+            dbc.Button("Ampliar", id={'type': 'btn-modal-egr', 'index': 'egresados-grado'}, className="btn-sm float-end"),
+            dbc.Modal([
+                dbc.ModalHeader(dbc.ModalTitle("Egresados de Grado")),
+                dbc.ModalBody(dcc.Graph(id={'type': 'modal-graph-egr', 'index': 'egresados-grado'}, figure=crear_grafico_egresados_por_tipo(df_egresados_grado, 'Grado'), style={'height': '80vh'}))
+            ], id={'type': 'modal-egr', 'index': 'egresados-grado'}, size="xl", is_open=False)
+        ], className="six columns position-relative"),
+        # Gráfico 6
+        html.Div([
+            dcc.Graph(id={'type': 'graph-egr', 'index': 'egresados-posgrado'}, figure=crear_grafico_egresados_por_tipo(df_egresados_posgrado, 'Posgrado')),
+            dbc.Button("Ampliar", id={'type': 'btn-modal-egr', 'index': 'egresados-posgrado'}, className="btn-sm float-end"),
+            dbc.Modal([
+                dbc.ModalHeader(dbc.ModalTitle("Egresados de Posgrado")),
+                dbc.ModalBody(dcc.Graph(id={'type': 'modal-graph-egr', 'index': 'egresados-posgrado'}, figure=crear_grafico_egresados_por_tipo(df_egresados_posgrado, 'Posgrado'), style={'height': '80vh'}))
+            ], id={'type': 'modal-egr', 'index': 'egresados-posgrado'}, size="xl", is_open=False)
         ], className="six columns position-relative"),
     ], className="row"),
 

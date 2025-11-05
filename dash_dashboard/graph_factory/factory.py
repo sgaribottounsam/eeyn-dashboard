@@ -395,3 +395,37 @@ def crear_grafico_inscriptos_grado_y_pregrado_por_dia(df):
     )
 
     return fig
+
+def crear_grafico_egresados_por_tipo(df, tipo):
+    """
+    Crea un gráfico de barras de egresados por carrera para un tipo específico (Grado/Posgrado).
+    """
+    if df.empty:
+        return crear_grafico_vacio(f"Egresados de {tipo}")
+
+    total_egresados = df['cantidad'].sum()
+    titulo = f'Egresados {tipo} (Total: {total_egresados})'
+
+    df_sorted = df.sort_values(by='cantidad', ascending=False)
+
+    fig = px.bar(
+        df_sorted,
+        x='propuesta',
+        y='cantidad',
+        orientation='v',
+        title=titulo,
+        labels={'propuesta': 'Carrera', 'cantidad': 'Cantidad de Egresados'},
+        text='cantidad',
+        color='propuesta',
+        color_discrete_map=COLORES_CARRERAS
+    )
+
+    fig.update_traces(textposition='inside')
+    fig.update_layout(
+        height=GRAPH_HEIGHT,
+        plot_bgcolor='white',
+        showlegend=False,
+        xaxis_title='Carrera'
+    )
+
+    return fig

@@ -306,3 +306,57 @@ def cargar_inscriptos_grado_y_pregrado_por_dia():
     except Exception as e:
         print(f"Error al consultar la base de datos para inscriptos diarios de grado y pregrado: {e}")
         return pd.DataFrame()
+
+
+def cargar_egresados_por_tipo(tipo):
+    """
+    Carga el total de egresados por carrera, filtrando por tipo ('Grado' o 'Posgrado').
+    """
+    db_path = os.path.join(project_root, 'data', 'base_de_datos', 'academica.db')
+    query = f"""
+        SELECT
+            e.propuesta,
+            p.nombre as carrera_nombre,
+            COUNT(DISTINCT e.documento) as cantidad
+        FROM egresados AS e
+        LEFT JOIN propuestas AS p
+            ON e.propuesta = p.codigo
+        WHERE p.tipo = '{tipo}'
+        GROUP BY e.propuesta, p.nombre
+    """
+    try:
+        conn = sqlite3.connect(db_path)
+        df = pd.read_sql_query(query, conn)
+        conn.close()
+        print(f"-> Datos de egresados de {tipo} cargados correctamente.")
+        return df
+    except Exception as e:
+        print(f"Error al cargar egresados de {tipo}: {e}")
+        return pd.DataFrame()
+
+def cargar_total_egresados_por_tipo():
+    """
+    Carga el total de egresados por tipo de carrera (Grado, Posgrado, Pregrado).
+    """
+    db_path = os.path.join(project_root, 'data', 'base_de_datos', 'academica.db')
+    query = """
+        SELECT
+            c.tipo,
+            COUNT(DISTINCT e.documento) as cantidad
+        FROM egresados AS e
+        LEFT JOIN propuestas AS c
+            ON e.propuesta = c.codigo
+        WHERE c.tipo IN ('Grado', 'Posgrado', 'Pregrado')
+        GROUP BY c.tipo
+    """
+    try:
+        conn = sqlite3.connect(db_path)
+        df = pd.read_sql_query(query, conn)
+        conn.close()
+        # Convertir el dataframe a un diccionario con el formato {'tipo': cantidad}
+        kpis = {f"Total Egresados {row['tipo']}": row['cantidad'] for _, row in df.iterrows()}
+        print(f"-> KPIs de total de egresados por tipo cargados: {kpis}")
+        return kpis
+    except Exception as e:
+        print(f"Error al cargar el total de egresados por tipo: {e}")
+        return {}

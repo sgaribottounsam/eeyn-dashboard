@@ -93,12 +93,12 @@ layout = html.Div([
         ], className="six columns position-relative"),
         # Gráfico 2
         html.Div([
-            dcc.Graph(id={'type': 'graph-egr', 'index': 'graduados-plan'}, figure=crear_grafico_cantidad_graduados_por_plan(df_egresados_tasa)),
-            dbc.Button("Ampliar", id={'type': 'btn-modal-egr', 'index': 'graduados-plan'}, className="btn-sm float-end"),
+            dcc.Graph(id={'type': 'graph-egr', 'index': 'egresados-grado'}, figure=crear_grafico_egresados_por_tipo(df_egresados_grado, 'Grado')),
+            dbc.Button("Ampliar", id={'type': 'btn-modal-egr', 'index': 'egresados-grado'}, className="btn-sm float-end"),
             dbc.Modal([
-                dbc.ModalHeader(dbc.ModalTitle("Cantidad de Graduados por Plan")),
-                dbc.ModalBody(dcc.Graph(id={'type': 'modal-graph-egr', 'index': 'graduados-plan'}, figure=crear_grafico_cantidad_graduados_por_plan(df_egresados_tasa), style={'height': '80vh'}))
-            ], id={'type': 'modal-egr', 'index': 'graduados-plan'}, size="xl", is_open=False)
+                dbc.ModalHeader(dbc.ModalTitle("Egresados de Grado")),
+                dbc.ModalBody(dcc.Graph(id={'type': 'modal-graph-egr', 'index': 'egresados-grado'}, figure=crear_grafico_egresados_por_tipo(df_egresados_grado, 'Grado'), style={'height': '80vh'}))
+            ], id={'type': 'modal-egr', 'index': 'egresados-grado'}, size="xl", is_open=False)
         ], className="six columns position-relative"),
     ], className="row"),
     html.Div([
@@ -124,21 +124,21 @@ layout = html.Div([
     html.Div([
         # Gráfico 5
         html.Div([
-            dcc.Graph(id={'type': 'graph-egr', 'index': 'egresados-grado'}, figure=crear_grafico_egresados_por_tipo(df_egresados_grado, 'Grado')),
-            dbc.Button("Ampliar", id={'type': 'btn-modal-egr', 'index': 'egresados-grado'}, className="btn-sm float-end"),
-            dbc.Modal([
-                dbc.ModalHeader(dbc.ModalTitle("Egresados de Grado")),
-                dbc.ModalBody(dcc.Graph(id={'type': 'modal-graph-egr', 'index': 'egresados-grado'}, figure=crear_grafico_egresados_por_tipo(df_egresados_grado, 'Grado'), style={'height': '80vh'}))
-            ], id={'type': 'modal-egr', 'index': 'egresados-grado'}, size="xl", is_open=False)
-        ], className="six columns position-relative"),
-        # Gráfico 6
-        html.Div([
             dcc.Graph(id={'type': 'graph-egr', 'index': 'egresados-posgrado'}, figure=crear_grafico_egresados_por_tipo(df_egresados_posgrado, 'Posgrado')),
             dbc.Button("Ampliar", id={'type': 'btn-modal-egr', 'index': 'egresados-posgrado'}, className="btn-sm float-end"),
             dbc.Modal([
                 dbc.ModalHeader(dbc.ModalTitle("Egresados de Posgrado")),
                 dbc.ModalBody(dcc.Graph(id={'type': 'modal-graph-egr', 'index': 'egresados-posgrado'}, figure=crear_grafico_egresados_por_tipo(df_egresados_posgrado, 'Posgrado'), style={'height': '80vh'}))
             ], id={'type': 'modal-egr', 'index': 'egresados-posgrado'}, size="xl", is_open=False)
+        ], className="six columns position-relative"),
+        # Gráfico 6
+        html.Div([
+            dcc.Graph(id={'type': 'graph-egr', 'index': 'graduados-plan'}, figure=crear_grafico_cantidad_graduados_por_plan(df_egresados_tasa)),
+            dbc.Button("Ampliar", id={'type': 'btn-modal-egr', 'index': 'graduados-plan'}, className="btn-sm float-end"),
+            dbc.Modal([
+                dbc.ModalHeader(dbc.ModalTitle("Cantidad de Graduados por Plan")),
+                dbc.ModalBody(dcc.Graph(id={'type': 'modal-graph-egr', 'index': 'graduados-plan'}, figure=crear_grafico_cantidad_graduados_por_plan(df_egresados_tasa), style={'height': '80vh'}))
+            ], id={'type': 'modal-egr', 'index': 'graduados-plan'}, size="xl", is_open=False)
         ], className="six columns position-relative"),
     ], className="row"),
 

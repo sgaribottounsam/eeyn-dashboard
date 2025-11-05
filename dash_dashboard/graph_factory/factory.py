@@ -134,17 +134,32 @@ def crear_grafico_cantidad_graduados_por_plan(df):
         'Carrera': 'propuesta', 'Plan': 'plan', 'Graduados': 'cantidad'
     })
 
+    # Calcular el total por carrera para ordenar
+    total_por_carrera = df_plot.groupby('propuesta')['cantidad'].sum().sort_values(ascending=False).index
+
     color_map = {}
     for carrera in df_plot['propuesta'].unique():
         base_color = COLORES_CARRERAS.get(carrera, '#cccccc')
         color_map[f"{carrera} - Plan Nuevo"] = base_color
         color_map[f"{carrera} - Plan Viejo"] = darken_color(base_color, 0.7)
     df_plot['carrera_y_plan'] = df_plot['propuesta'] + " - " + df_plot['plan']
+    
+    # Ordenar para apilar correctamente (Viejo abajo, Nuevo arriba)
+    df_plot.sort_values(by='carrera_y_plan', ascending=False, inplace=True)
+
     fig = px.bar(df_plot, x='propuesta', y='cantidad', color='carrera_y_plan',
                  title='👨‍🎓 Cantidad de graduados por carrera y plan',
                  labels={'cantidad': 'Cantidad de Egresados', 'propuesta': 'Carrera', 'carrera_y_plan': 'Carrera y Plan'},
-                 orientation='v', color_discrete_map=color_map, barmode='group', text='cantidad')
-    fig.update_traces(textposition='outside')
+                 orientation='v', color_discrete_map=color_map, barmode='stack', text='cantidad',
+                 category_orders={'propuesta': total_por_carrera})
+    
+    fig.update_traces(textposition='inside')
+
+    # Aumentar el tamaño de la fuente para carreras específicas
+    for trace in fig.data:
+        if 'LI-LECO-P' in trace.name or 'CP-CCCP-PC' in trace.name:
+            trace.textfont.size = 14
+
     fig.update_layout(height=GRAPH_HEIGHT, xaxis_title="Carrera", yaxis_title="Cantidad de Egresados", plot_bgcolor='white', showlegend=True, margin=dict(l=20, r=20, t=40, b=20))
     return fig
 
@@ -181,7 +196,7 @@ def crear_grafico_duracion_carrera(df):
     df_plot.columns = ['carrera', 'duracion']
     df_plot = df_plot.sort_values('duracion', ascending=True)
     fig = px.bar(df_plot, x='duracion', y='carrera', title='⏳ Duración Promedio de la Carrera (Total)', labels={'duracion': 'Años', 'carrera': 'Carrera y Plan'}, text='duracion')
-    fig.update_traces(texttemplate='%{text:.1f} años', textposition='outside')
+    fig.update_traces(texttemplate='%{text:.1f} años', textposition='inside')
     fig.update_layout(height=GRAPH_HEIGHT, xaxis_title="Duración promedio en años", yaxis_title=None, plot_bgcolor='white', showlegend=False, margin=dict(l=20, r=20, t=40, b=20))
     return fig
 

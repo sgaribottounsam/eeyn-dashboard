@@ -342,7 +342,7 @@ def cargar_total_egresados_por_tipo():
     query = """
         SELECT
             c.tipo,
-            COUNT(DISTINCT e.documento) as cantidad
+            COUNT(e.documento) as cantidad
         FROM egresados AS e
         LEFT JOIN propuestas AS c
             ON e.propuesta = c.codigo

@@ -5,7 +5,7 @@ from datetime import datetime
 from .app import app, server
 
 # Paso 2: Importar los layouts de nuestras páginas.
-from .pages import inscripciones_materias, egresados, inscripciones_carreras, analisis_cohorte
+from .pages import estudiantes_activos, egresados, inscripciones_carreras, analisis_cohorte
 
 # --- Estilos Dinámicos ---
 # Estilo de la barra lateral cuando está ABIERTA
@@ -46,7 +46,7 @@ sidebar = html.Div(
     [
         # Eliminamos el logo de aquí
         html.H4("Menú", style={'margin-top':'40px'}),
-        dcc.Link('👨‍🎓 Inscripciones a Materias', href='/inscripciones-materias', style={'display': 'block', 'margin': '5px'}),
+        dcc.Link('👨‍🎓 Estudiantes Activos', href='/estudiantes-activos', style={'display': 'block', 'margin': '5px'}),
         dcc.Link('🚀 Inscripciones a Carreras', href='/inscripciones-carreras', style={'display': 'block', 'margin': '5px'}),
         dcc.Link('🎓 Egresados', href='/egresados', style={'display': 'block', 'margin': '5px'}),
         dcc.Link('📊 Análisis por Cohorte', href='/analisis-cohorte', style={'display': 'block', 'margin': '5px'}),
@@ -130,8 +130,8 @@ def toggle_sidebar(n, data):
 def display_page(pathname):
     if pathname == '/egresados':
         return egresados.layout
-    elif pathname == '/inscripciones-materias':
-        return inscripciones_materias.layout
+    elif pathname == '/estudiantes-activos':
+        return estudiantes_activos.layout
     elif pathname == '/analisis-cohorte':
         return analisis_cohorte.layout
     else:

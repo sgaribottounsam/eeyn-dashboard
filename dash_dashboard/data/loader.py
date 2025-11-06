@@ -360,3 +360,23 @@ def cargar_total_egresados_por_tipo():
     except Exception as e:
         print(f"Error al cargar el total de egresados por tipo: {e}")
         return {}
+
+def cargar_estudiantes_activos():
+    """
+    Carga el conteo de estudiantes activos por año y tipo de carrera desde la BD.
+    """
+    db_path = os.path.join(project_root, 'data', 'base_de_datos', 'academica.db')
+    query_path = os.path.join(project_root, 'data', 'base_de_datos', 'consultas', 'estudiantes_activos.sql')
+    
+    try:
+        with open(query_path, 'r', encoding='utf-8') as f:
+            query = f.read()
+            
+        conn = sqlite3.connect(db_path)
+        df = pd.read_sql_query(query, conn)
+        conn.close()
+        print("-> Datos de estudiantes activos por año y tipo cargados desde la BD.")
+        return df
+    except Exception as e:
+        print(f"Error al consultar la base de datos para estudiantes activos: {e}")
+        return pd.DataFrame()

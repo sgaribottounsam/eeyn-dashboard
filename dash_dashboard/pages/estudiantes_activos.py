@@ -9,10 +9,11 @@ from ..data.loader import (
     cargar_evolucion_todas,
     cargar_evolucion_grado,
     cargar_cpu_materias,
-    cargar_kpis_inscripciones
+    cargar_kpis_inscripciones,
+    cargar_estudiantes_activos
 )
 from ..graph_factory.factory import (
-    crear_grafico_estudiantes_por_carrera,
+    crear_grafico_estudiantes_activos,
     crear_grafico_evolucion_temporal,
     crear_grafico_inscripciones_cuatrimestre,
     crear_grafico_cpu_materias,
@@ -20,6 +21,7 @@ from ..graph_factory.factory import (
 )
 
 # --- Carga de datos para la página ---
+df_estudiantes_activos = cargar_estudiantes_activos()
 df_todas = cargar_evolucion_todas()
 df_grado = cargar_evolucion_grado()
 df_cpu_mat = cargar_cpu_materias()
@@ -43,7 +45,7 @@ def create_kpi_card(card_index, initial_kpi_name, initial_kpi_value):
 initial_indices = [(i % len(kpi_names_insc)) for i in range(4)] if kpi_names_insc else [0,0,0,0]
 
 layout = html.Div([
-    html.H1("Inscripción a materias"),
+    html.H1("Estudiantes Activos"),
     html.Div(id='kpi-row-insc', className="row", children=[
         create_kpi_card(i, 
                         kpi_names_insc[initial_indices[i]],
@@ -52,14 +54,12 @@ layout = html.Div([
     ]),
     html.Div([
         html.Div([
-            html.Label("Filtrar estudiantes por:"),
-            dcc.RadioItems(id='filtro-estudiantes-insc', options=[{'label': 'Todas', 'value': 'Todas'}, {'label': 'Grado', 'value': 'Grado'}], value='Todas', labelStyle={'display': 'inline-block', 'marginRight': '10px'}),
-            dcc.Graph(id='grafico-estudiantes-carrera'),
-            dbc.Button("Ampliar", id={'type': 'btn-modal-materias', 'index': 'estudiantes-carrera'}, className="btn-sm float-end"),
+            dcc.Graph(id='grafico-estudiantes-activos'),
+            dbc.Button("Ampliar", id={'type': 'btn-modal-materias', 'index': 'estudiantes-activos'}, className="btn-sm float-end"),
             dbc.Modal([
-                dbc.ModalHeader(dbc.ModalTitle("Estudiantes por Carrera")),
-                dbc.ModalBody(dcc.Graph(id={'type': 'modal-graph-materias', 'index': 'estudiantes-carrera'}, style={'height': '80vh'}))
-            ], id={'type': 'modal-materias', 'index': 'estudiantes-carrera'}, size="xl", is_open=False)
+                dbc.ModalHeader(dbc.ModalTitle("Evolución de Estudiantes Activos")),
+                dbc.ModalBody(dcc.Graph(id={'type': 'modal-graph-materias', 'index': 'estudiantes-activos'}, style={'height': '80vh'}))
+            ], id={'type': 'modal-materias', 'index': 'estudiantes-activos'}, size="xl", is_open=False)
         ], className="six columns position-relative"),
         html.Div([
             html.Label("Filtrar evolución por:"),
@@ -133,16 +133,16 @@ def update_all_kpis(n0, n1, n2, n3, current_indices):
     return new_titles + new_values + [new_indices]
 
 
-# Callbacks de los gráficos (sin cambios)
 @app.callback(
-    [Output('grafico-estudiantes-carrera', 'figure'),
-     Output({'type': 'modal-graph-materias', 'index': 'estudiantes-carrera'}, 'figure')],
-    [Input('filtro-estudiantes-insc', 'value')]
+    [Output('grafico-estudiantes-activos', 'figure'),
+     Output({'type': 'modal-graph-materias', 'index': 'estudiantes-activos'}, 'figure')],
+    [Input('url', 'pathname')]
 )
-def update_grafico_estudiantes(filtro_tipo):
-    df = df_grado if filtro_tipo == 'Grado' else df_todas
-    figure = crear_grafico_estudiantes_por_carrera(df, filtro_tipo)
-    return figure, figure
+def update_grafico_estudiantes_activos(pathname):
+    if pathname == '/estudiantes-activos':
+        figure = crear_grafico_estudiantes_activos(df_estudiantes_activos)
+        return figure, figure
+    return crear_grafico_vacio(), crear_grafico_vacio()
 
 @app.callback(
     [Output('grafico-evolucion-temporal', 'figure'),
@@ -160,7 +160,7 @@ def update_grafico_evolucion(filtro_tipo):
     [Input('url', 'pathname')]
 )
 def update_grafico_insc_cuatri(pathname):
-    if pathname == '/inscripciones-materias':
+    if pathname == '/estudiantes-activos':
         figure = crear_grafico_inscripciones_cuatrimestre(df_todas)
         return figure, figure
     return crear_grafico_vacio(), crear_grafico_vacio()
@@ -171,7 +171,7 @@ def update_grafico_insc_cuatri(pathname):
     [Input('url', 'pathname')]
 )
 def update_grafico_cpu(pathname):
-    if pathname == '/inscripciones-materias':
+    if pathname == '/estudiantes-activos':
         figure = crear_grafico_cpu_materias(df_cpu_mat)
         return figure, figure
     return crear_grafico_vacio(), crear_grafico_vacio()

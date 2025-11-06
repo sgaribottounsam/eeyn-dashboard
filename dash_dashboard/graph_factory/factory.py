@@ -444,3 +444,32 @@ def crear_grafico_egresados_por_tipo(df, tipo):
     )
 
     return fig
+
+def crear_grafico_estudiantes_activos(df):
+    """
+    Crea un gráfico de columnas de la evolución de estudiantes activos por año y tipo.
+    """
+    if df.empty:
+        return crear_grafico_vacio("Evolución de Estudiantes Activos")
+
+    fig = px.bar(
+        df,
+        x='anio',
+        y='total_estudiantes',
+        color='tipo',
+        barmode='group',
+        text_auto=True,
+        title='Evolución de Estudiantes Activos por Año y Tipo'
+    )
+    
+    fig.update_traces(textposition='inside')
+    
+    fig.update_layout(
+        height=GRAPH_HEIGHT,
+        xaxis_title="Año",
+        yaxis_title="Cantidad de Estudiantes",
+        plot_bgcolor='white',
+        legend_title_text='Tipo de Carrera'
+    )
+    
+    return fig

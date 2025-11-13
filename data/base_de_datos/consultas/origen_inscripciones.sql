@@ -1,5 +1,5 @@
 WITH origen_insc_2026 AS (
-    SELECT ic.n_documento, ic.carrera, IFNULL(p.origen, "Homologación") AS estado
+    SELECT ic.n_documento, ic.carrera, IFNULL(p.origen, "Homologación") AS origen
     FROM inscripciones_carreras ic
     LEFT JOIN preinscriptos AS p
     ON ic.n_documento = p.identificacion
@@ -7,7 +7,7 @@ WITH origen_insc_2026 AS (
     WHERE ic.anio = 2026
 )
 
-SELECT estado, carrera, COUNT(DISTINCT n_documento) AS cantidad
+SELECT origen, COUNT(DISTINCT n_documento) AS cantidad
 FROM origen_insc_2026
 WHERE substr(carrera,1,3) IN ('LI-', 'CP-', 'PR-')
-GROUP BY estado, carrera
+GROUP BY origen

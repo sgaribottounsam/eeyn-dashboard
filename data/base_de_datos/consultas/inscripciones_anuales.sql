@@ -12,6 +12,6 @@ FROM ingresos AS i
 LEFT JOIN estudiantes AS e
     ON e.tipo_y_n_documento = i.tipo_y_n_documento
         AND e.ano_ingreso = i.primer_ingreso
-WHERE primer_ingreso >= 2021
+WHERE primer_ingreso = 2025
 
 GROUP BY i.primer_ingreso, e.carrera

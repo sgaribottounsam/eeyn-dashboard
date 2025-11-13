@@ -23,6 +23,12 @@ from ..graph_factory.factory import (
     crear_grafico_inscriptos_grado_y_pregrado_por_dia, # Add this
     COLORES_CARRERAS # <-- IMPORTAMOS EL DICCIONARIO DE COLORES
 )
+from ..data.loader import (
+    cargar_origen_preinscripcion,
+    cargar_nuevos_inscriptos_primer_ingreso,
+    cargar_nuevos_inscriptos_por_carrera,
+    cargar_nuevos_inscriptos_historico,
+)
 
 # --- Registro de la Página ---
 dash.register_page(__name__, path='/inscripciones-carreras', name='Inscripciones a Carreras')
@@ -199,7 +205,7 @@ def grafico_distribucion_estado():
     fig = px.bar(df, x='estado', y='cantidad', title='Distribución de Preinscriptos por Estado',
                  labels={'estado': 'Estado de Preinscripción', 'cantidad': 'Cantidad de Alumnos'},
                  template='plotly_white', text_auto=True)
-    fig.update_traces(marker_color='#004B8D', textposition='outside')
+    fig.update_traces(marker_color='#004B8D', textposition='inside')
     fig.update_layout(title_x=0.5, xaxis_tickangle=-45)
     return fig
 
@@ -234,7 +240,75 @@ def grafico_inscriptos_grado_2026():
                  color='codigo',
                  color_discrete_map=COLORES_CARRERAS
                 )
+    fig.update_traces(textposition='inside')
     fig.update_layout(title_x=0.5, xaxis_tickangle=-30, showlegend=False)
+    return fig
+
+def grafico_origen_preinscripcion(df):
+    """Crea un gráfico de torta con el origen de la preinscripción."""
+    if df.empty:
+        return px.pie(title="Origen de la preinscripción (No hay datos)")
+    
+    total = df['cantidad'].sum()
+    fig = px.pie(df, names='origen', values='cantidad',
+                 title=f'Origen de la preinscripción (Total: {total})',
+                 template='plotly_white')
+    fig.update_traces(texttemplate='%{percent:.1%} (Cant: %{value})')
+    fig.update_layout(title_x=0.5)
+    return fig
+
+def grafico_nuevos_inscriptos_primer_ingreso(df):
+    """Crea un gráfico de barras para los nuevos inscriptos de primer ingreso."""
+    if df.empty:
+        return px.bar(title="Nuevos Inscriptos: Primer Ingreso (No hay datos)")
+    
+    fig = px.bar(df, x='primera_carrera', y='cantidad', title='Nuevos Inscriptos: Primer Ingreso',
+                 labels={'primera_carrera': 'Tipo de Ingreso', 'cantidad': 'Cantidad'},
+                 template='plotly_white', text_auto=True)
+    fig.update_traces(marker_color='#004B8D', textposition='inside')
+    fig.update_layout(title_x=0.5)
+    return fig
+
+def grafico_nuevos_inscriptos_por_carrera(df):
+    """Crea un gráfico de barras para los nuevos inscriptos por carrera."""
+    if df.empty:
+        return px.bar(title="Nuevos Inscriptos: Por Carrera (No hay datos)")
+    
+    fig = px.bar(df, x='carrera', y='cantidad', title='Nuevos Inscriptos: Por Carrera',
+                 labels={'carrera': 'Carrera', 'cantidad': 'Cantidad'},
+                 template='plotly_white', text_auto=True,
+                 color='carrera',
+                 color_discrete_map=COLORES_CARRERAS)
+    fig.update_traces(textposition='inside')
+    fig.update_layout(title_x=0.5, showlegend=False)
+    return fig
+
+def grafico_nuevos_inscriptos_historico(df):
+    """Crea un gráfico de barras agrupado y apilado para el histórico de nuevos inscriptos."""
+    if df.empty:
+        return px.bar(title="Nuevos Inscriptos: Histórico (No hay datos)")
+    
+    fig = px.bar(df, x='ano_ingreso', y='cantidad', color='carrera',
+                 title='Nuevos Inscriptos: Histórico',
+                 labels={'ano_ingreso': 'Año de Ingreso', 'cantidad': 'Cantidad', 'carrera': 'Carrera'},
+                 template='plotly_white', text_auto=True,
+                 barmode='stack',
+                 color_discrete_map=COLORES_CARRERAS,
+                 category_orders={'carrera': list(COLORES_CARRERAS.keys())})
+    fig.update_traces(textposition='inside')
+    
+    # Calcular totales por año y agregar anotaciones
+    df_totals = df.groupby('ano_ingreso')['cantidad'].sum().reset_index()
+    for _, row in df_totals.iterrows():
+        fig.add_annotation(
+            x=row['ano_ingreso'],
+            y=row['cantidad'],
+            text=f"Total: {row['cantidad']}",
+            showarrow=False,
+            yshift=10
+        )
+        
+    fig.update_layout(title_x=0.5)
     return fig
 
 # --- Carga de Datos para gráficos no dinámicos ---
@@ -242,6 +316,11 @@ df_inscriptos_grado_dia = cargar_inscriptos_grado_por_dia()
 df_insc_anio_carrera = cargar_inscripciones_por_anio_carrera()
 df_docu_por_dia = cargar_documentacion_por_dia()
 df_inscriptos_grado_y_pregrado_por_dia = cargar_inscriptos_grado_y_pregrado_por_dia()
+df_origen_preinscripcion = cargar_origen_preinscripcion()
+df_nuevos_inscriptos_primer_ingreso = cargar_nuevos_inscriptos_primer_ingreso()
+df_nuevos_inscriptos_por_carrera = cargar_nuevos_inscriptos_por_carrera()
+df_nuevos_inscriptos_historico = cargar_nuevos_inscriptos_historico()
+
 
 # --- Filtrado para el gráfico de evolución de inscriptos ---
 hoy = datetime.now()
@@ -315,6 +394,42 @@ layout = html.Div([
                 dbc.ModalHeader(dbc.ModalTitle("Inscriptos Grado y Pregrado por Día")),
                 dbc.ModalBody(dcc.Graph(figure=crear_grafico_inscriptos_grado_y_pregrado_por_dia(df_inscriptos_grado_y_pregrado_por_dia), style={'height': '80vh'}))
             ], id={'type': 'modal-carreras', 'index': 'inscriptos-grado-pregrado-dia'}, size="xl", is_open=False)
+        ], className="six columns position-relative"),
+    ]),
+    html.Div(className="row", children=[
+        html.Div([
+            dcc.Graph(id={'type': 'graph-carreras', 'index': 'nuevos-inscriptos-primer-ingreso'}, figure=grafico_nuevos_inscriptos_primer_ingreso(df_nuevos_inscriptos_primer_ingreso)),
+            dbc.Button("Ampliar", id={'type': 'btn-modal-carreras', 'index': 'nuevos-inscriptos-primer-ingreso'}, className="btn-sm float-end"),
+            dbc.Modal([
+                dbc.ModalHeader(dbc.ModalTitle("Nuevos Inscriptos: Primer Ingreso")),
+                dbc.ModalBody(dcc.Graph(figure=grafico_nuevos_inscriptos_primer_ingreso(df_nuevos_inscriptos_primer_ingreso), style={'height': '80vh'}))
+            ], id={'type': 'modal-carreras', 'index': 'nuevos-inscriptos-primer-ingreso'}, size="xl", is_open=False)
+        ], className="six columns position-relative"),
+        html.Div([
+            dcc.Graph(id={'type': 'graph-carreras', 'index': 'nuevos-inscriptos-por-carrera'}, figure=grafico_nuevos_inscriptos_por_carrera(df_nuevos_inscriptos_por_carrera)),
+            dbc.Button("Ampliar", id={'type': 'btn-modal-carreras', 'index': 'nuevos-inscriptos-por-carrera'}, className="btn-sm float-end"),
+            dbc.Modal([
+                dbc.ModalHeader(dbc.ModalTitle("Nuevos Inscriptos: Por Carrera")),
+                dbc.ModalBody(dcc.Graph(figure=grafico_nuevos_inscriptos_por_carrera(df_nuevos_inscriptos_por_carrera), style={'height': '80vh'}))
+            ], id={'type': 'modal-carreras', 'index': 'nuevos-inscriptos-por-carrera'}, size="xl", is_open=False)
+        ], className="six columns position-relative"),
+    ]),
+    html.Div(className="row", children=[
+        html.Div([
+            dcc.Graph(id={'type': 'graph-carreras', 'index': 'origen-preinscripcion'}, figure=grafico_origen_preinscripcion(df_origen_preinscripcion)),
+            dbc.Button("Ampliar", id={'type': 'btn-modal-carreras', 'index': 'origen-preinscripcion'}, className="btn-sm float-end"),
+            dbc.Modal([
+                dbc.ModalHeader(dbc.ModalTitle("Origen de la Preinscripción")),
+                dbc.ModalBody(dcc.Graph(figure=grafico_origen_preinscripcion(df_origen_preinscripcion), style={'height': '80vh'}))
+            ], id={'type': 'modal-carreras', 'index': 'origen-preinscripcion'}, size="xl", is_open=False)
+        ], className="six columns position-relative"),
+        html.Div([
+            dcc.Graph(id={'type': 'graph-carreras', 'index': 'nuevos-inscriptos-historico'}, figure=grafico_nuevos_inscriptos_historico(df_nuevos_inscriptos_historico)),
+            dbc.Button("Ampliar", id={'type': 'btn-modal-carreras', 'index': 'nuevos-inscriptos-historico'}, className="btn-sm float-end"),
+            dbc.Modal([
+                dbc.ModalHeader(dbc.ModalTitle("Nuevos Inscriptos: Histórico")),
+                dbc.ModalBody(dcc.Graph(figure=grafico_nuevos_inscriptos_historico(df_nuevos_inscriptos_historico), style={'height': '80vh'}))
+            ], id={'type': 'modal-carreras', 'index': 'nuevos-inscriptos-historico'}, size="xl", is_open=False)
         ], className="six columns position-relative"),
     ]),
 ])

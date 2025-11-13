@@ -362,21 +362,179 @@ def cargar_total_egresados_por_tipo():
         return {}
 
 def cargar_estudiantes_activos():
+
     """
+
     Carga el conteo de estudiantes activos por año y tipo de carrera desde la BD.
+
+    """
+
+    db_path = os.path.join(project_root, 'data', 'base_de_datos', 'academica.db')
+
+    query_path = os.path.join(project_root, 'data', 'base_de_datos', 'consultas', 'estudiantes_activos.sql')
+
+    
+
+    try:
+
+        with open(query_path, 'r', encoding='utf-8') as f:
+
+            query = f.read()
+
+            
+
+        conn = sqlite3.connect(db_path)
+
+        df = pd.read_sql_query(query, conn)
+
+        conn.close()
+
+        print("-> Datos de estudiantes activos por año y tipo cargados desde la BD.")
+
+        return df
+
+    except Exception as e:
+
+        print(f"Error al consultar la base de datos para estudiantes activos: {e}")
+
+        return pd.DataFrame()
+
+
+
+def cargar_origen_preinscripcion():
+
+    """
+
+    Carga el origen de la preinscripción para el año 2026.
+
+    """
+
+    db_path = os.path.join(project_root, 'data', 'base_de_datos', 'academica.db')
+
+    query_path = os.path.join(project_root, 'data', 'base_de_datos', 'consultas', 'origen_inscripciones.sql')
+
+    
+
+    try:
+
+        with open(query_path, 'r', encoding='utf-8') as f:
+
+            query = f.read()
+
+            
+
+        conn = sqlite3.connect(db_path)
+
+        df = pd.read_sql_query(query, conn)
+
+        conn.close()
+
+        print("-> Datos de origen de preinscripción cargados desde la BD.")
+
+        return df
+
+    except Exception as e:
+
+        print(f"Error al consultar la base de datos para origen de preinscripción: {e}")
+
+        return pd.DataFrame()
+
+
+
+def cargar_nuevos_inscriptos_primer_ingreso(anio=2026):
+    """
+    Carga el conteo de nuevos inscriptos que son primer ingreso vs. los que tienen un ingreso anterior.
     """
     db_path = os.path.join(project_root, 'data', 'base_de_datos', 'academica.db')
-    query_path = os.path.join(project_root, 'data', 'base_de_datos', 'consultas', 'estudiantes_activos.sql')
-    
+    query = f"""
+        WITH primera_inscripcion AS (
+            SELECT e.tipo_y_n_documento, MIN(e.ano_ingreso) AS primer_ingreso
+            FROM estudiantes AS e
+            GROUP BY e.tipo_y_n_documento
+        )
+        SELECT DISTINCT COUNT(DISTINCT e.tipo_y_n_documento) as cantidad,
+            IIF(pi.primer_ingreso = {anio},
+                'Primer Ingreso',
+                'Tiene un ingreso anterior'
+            ) AS primera_carrera
+            FROM estudiantes AS e
+            LEFT JOIN primera_inscripcion AS pi
+                ON e.tipo_y_n_documento = pi.tipo_y_n_documento
+            WHERE e.ano_ingreso = {anio}
+            GROUP BY primera_carrera
+    """
     try:
-        with open(query_path, 'r', encoding='utf-8') as f:
-            query = f.read()
-            
         conn = sqlite3.connect(db_path)
         df = pd.read_sql_query(query, conn)
         conn.close()
-        print("-> Datos de estudiantes activos por año y tipo cargados desde la BD.")
+        print(f"-> Datos de nuevos inscriptos (primer ingreso) para el año {anio} cargados.")
         return df
     except Exception as e:
-        print(f"Error al consultar la base de datos para estudiantes activos: {e}")
+        print(f"Error al cargar nuevos inscriptos (primer ingreso): {e}")
+        return pd.DataFrame()
+
+def cargar_nuevos_inscriptos_por_carrera(anio=2026):
+    """
+    Carga el conteo de nuevos inscriptos de primer ingreso por carrera para un año específico.
+    """
+    db_path = os.path.join(project_root, 'data', 'base_de_datos', 'academica.db')
+    query = f"""
+        WITH primera_inscripcion AS (
+            SELECT e.tipo_y_n_documento, MIN(e.ano_ingreso) AS primer_ingreso
+            FROM estudiantes AS e
+            GROUP BY e.tipo_y_n_documento
+        )
+        SELECT DISTINCT COUNT(DISTINCT e.tipo_y_n_documento) as cantidad,
+            SUBSTR(e.carrera, 2, 9) as carrera
+            FROM estudiantes AS e
+            LEFT JOIN primera_inscripcion AS pi
+                ON e.tipo_y_n_documento = pi.tipo_y_n_documento
+            LEFT JOIN propuestas as p
+                ON e.carrera = p.codigo
+            WHERE e.ano_ingreso = {anio}
+                AND pi.primer_ingreso = {anio}
+            GROUP BY SUBSTR(e.carrera, 2, 9)
+    """
+    try:
+        conn = sqlite3.connect(db_path)
+        df = pd.read_sql_query(query, conn)
+        conn.close()
+        df['carrera'] = df['carrera'].replace('CP-CCCP-P', 'CP-CCCP-PC')
+        print(f"-> Datos de nuevos inscriptos por carrera para el año {anio} cargados.")
+        return df
+    except Exception as e:
+        print(f"Error al cargar nuevos inscriptos por carrera: {e}")
+        return pd.DataFrame()
+
+def cargar_nuevos_inscriptos_historico(anio_inicio=2022):
+    """
+    Carga el histórico de nuevos inscriptos de primer ingreso por carrera y año.
+    """
+    db_path = os.path.join(project_root, 'data', 'base_de_datos', 'academica.db')
+    query = f"""
+        WITH primera_inscripcion AS (
+            SELECT e.tipo_y_n_documento, MIN(e.ano_ingreso) AS primer_ingreso
+            FROM estudiantes AS e
+            GROUP BY e.tipo_y_n_documento
+        )
+        SELECT DISTINCT COUNT(DISTINCT e.tipo_y_n_documento) as cantidad,
+            SUBSTR(e.carrera, 2, 9) as carrera, e.ano_ingreso
+            FROM estudiantes AS e
+            LEFT JOIN primera_inscripcion AS pi
+                ON e.tipo_y_n_documento = pi.tipo_y_n_documento
+            LEFT JOIN propuestas as p
+                ON e.carrera = p.codigo
+            WHERE e.ano_ingreso >= {anio_inicio}
+                AND pi.primer_ingreso = e.ano_ingreso
+            GROUP BY SUBSTR(e.carrera, 2, 9), e.ano_ingreso
+    """
+    try:
+        conn = sqlite3.connect(db_path)
+        df = pd.read_sql_query(query, conn)
+        conn.close()
+        df['carrera'] = df['carrera'].replace('CP-CCCP-P', 'CP-CCCP-PC')
+        print(f"-> Histórico de nuevos inscriptos desde {anio_inicio} cargado.")
+        return df
+    except Exception as e:
+        print(f"Error al cargar el histórico de nuevos inscriptos: {e}")
         return pd.DataFrame()

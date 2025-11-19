@@ -517,16 +517,19 @@ def cargar_nuevos_inscriptos_historico(anio_inicio=2022):
             FROM estudiantes AS e
             GROUP BY e.tipo_y_n_documento
         )
-        SELECT DISTINCT COUNT(DISTINCT e.tipo_y_n_documento) as cantidad,
-            SUBSTR(e.carrera, 2, 9) as carrera, e.ano_ingreso
-            FROM estudiantes AS e
-            LEFT JOIN primera_inscripcion AS pi
-                ON e.tipo_y_n_documento = pi.tipo_y_n_documento
-            LEFT JOIN propuestas as p
-                ON e.carrera = p.codigo
-            WHERE e.ano_ingreso >= {anio_inicio}
-                AND pi.primer_ingreso = e.ano_ingreso
-            GROUP BY SUBSTR(e.carrera, 2, 9), e.ano_ingreso
+        SELECT DISTINCT 
+            COUNT(DISTINCT e.tipo_y_n_documento) as cantidad,
+            SUBSTR(e.carrera, 2, 9) as carrera, 
+            e.ano_ingreso,
+            p.tipo
+        FROM estudiantes AS e
+        LEFT JOIN primera_inscripcion AS pi
+            ON e.tipo_y_n_documento = pi.tipo_y_n_documento
+        LEFT JOIN propuestas as p
+            ON (p.codigo = SUBSTR(e.carrera, 2, 9) OR p.codigo = SUBSTR(e.carrera, 2, 9) || 'P')
+        WHERE e.ano_ingreso >= {anio_inicio}
+            AND pi.primer_ingreso = e.ano_ingreso
+        GROUP BY carrera, e.ano_ingreso, p.tipo
     """
     try:
         conn = sqlite3.connect(db_path)
@@ -537,4 +540,73 @@ def cargar_nuevos_inscriptos_historico(anio_inicio=2022):
         return df
     except Exception as e:
         print(f"Error al cargar el histórico de nuevos inscriptos: {e}")
+        return pd.DataFrame()
+
+def cargar_cambios_carrera_por_carrera(anio=2026):
+    """
+    Carga el conteo de cambios de carrera (no primer ingreso) por carrera para un año específico.
+    """
+    db_path = os.path.join(project_root, 'data', 'base_de_datos', 'academica.db')
+    query = f"""
+        WITH primera_inscripcion AS (
+            SELECT e.tipo_y_n_documento, MIN(e.ano_ingreso) AS primer_ingreso
+            FROM estudiantes AS e
+            GROUP BY e.tipo_y_n_documento
+        )
+        SELECT DISTINCT COUNT(DISTINCT e.tipo_y_n_documento) as cantidad,
+            SUBSTR(e.carrera, 2, 9) as carrera
+            FROM estudiantes AS e
+            LEFT JOIN primera_inscripcion AS pi
+                ON e.tipo_y_n_documento = pi.tipo_y_n_documento
+            LEFT JOIN propuestas as p
+                ON e.carrera = p.codigo
+            WHERE e.ano_ingreso = {anio}
+                AND pi.primer_ingreso < {anio}
+            GROUP BY SUBSTR(e.carrera, 2, 9)
+    """
+    try:
+        conn = sqlite3.connect(db_path)
+        df = pd.read_sql_query(query, conn)
+        conn.close()
+        df['carrera'] = df['carrera'].replace('CP-CCCP-P', 'CP-CCCP-PC')
+        print(f"-> Datos de cambios de carrera por carrera para el año {anio} cargados.")
+        return df
+    except Exception as e:
+        print(f"Error al cargar cambios de carrera por carrera: {e}")
+        return pd.DataFrame()
+
+def cargar_cambios_carrera_historico(anio_inicio=2022):
+    """
+    Carga el histórico de cambios de carrera (no primer ingreso) por carrera y año.
+    """
+    db_path = os.path.join(project_root, 'data', 'base_de_datos', 'academica.db')
+    query = f"""
+        WITH primera_inscripcion AS (
+            SELECT e.tipo_y_n_documento, MIN(e.ano_ingreso) AS primer_ingreso
+            FROM estudiantes AS e
+            GROUP BY e.tipo_y_n_documento
+        )
+        SELECT DISTINCT 
+            COUNT(DISTINCT e.tipo_y_n_documento) as cantidad,
+            SUBSTR(e.carrera, 2, 9) as carrera, 
+            e.ano_ingreso,
+            p.tipo
+        FROM estudiantes AS e
+        LEFT JOIN primera_inscripcion AS pi
+            ON e.tipo_y_n_documento = pi.tipo_y_n_documento
+        LEFT JOIN propuestas as p
+            ON (p.codigo = SUBSTR(e.carrera, 2, 9) OR p.codigo = SUBSTR(e.carrera, 2, 9) || 'P')
+        WHERE e.ano_ingreso >= {anio_inicio}
+            AND pi.primer_ingreso < e.ano_ingreso
+        GROUP BY carrera, e.ano_ingreso, p.tipo
+    """
+    try:
+        conn = sqlite3.connect(db_path)
+        df = pd.read_sql_query(query, conn)
+        conn.close()
+        df['carrera'] = df['carrera'].replace('CP-CCCP-P', 'CP-CCCP-PC')
+        print(f"-> Histórico de cambios de carrera desde {anio_inicio} cargado.")
+        return df
+    except Exception as e:
+        print(f"Error al cargar el histórico de cambios de carrera: {e}")
         return pd.DataFrame()

@@ -16,8 +16,8 @@ WITH primera_inscripcion AS (
     LEFT JOIN primera_inscripcion AS pi
         ON e.tipo_y_n_documento = pi.tipo_y_n_documento
     WHERE e.ano_ingreso = 2026
-    GROUP BY primera_carrera
-*/
+    GROUP BY primera_carrera*/
+
 
 
 /*ORIGEN*/
@@ -36,36 +36,64 @@ WITH primera_inscripcion AS (
 
 /*CARRERA*/
 /*SELECT DISTINCT COUNT(DISTINCT e.tipo_y_n_documento),
-    substr(e.carrera,2, 9) as carrera
+    substr(e.carrera,2, 9) as codigo_carrera, propuestas.tipo
     FROM estudiantes AS e
     LEFT JOIN preinscriptos AS p
         ON p.identificacion = e.tipo_y_n_documento
     LEFT JOIN primera_inscripcion AS pi
         ON e.tipo_y_n_documento = pi.tipo_y_n_documento
+    LEFT JOIN propuestas
+        ON (propuestas.codigo = codigo_carrera
+        OR propuestas.codigo = CONCAT(codigo_carrera, 'P'))
     WHERE e.ano_ingreso = 2026
         AND pi.primer_ingreso = 2026
-    GROUP BY e.carrera*/
-
-/*CARRERA*/
-/*SELECT DISTINCT COUNT(DISTINCT e.tipo_y_n_documento),
-    substr(e.carrera,2, 9) as carrera
-    FROM estudiantes AS e
-    LEFT JOIN preinscriptos AS p
-        ON p.identificacion = e.tipo_y_n_documento
-    LEFT JOIN primera_inscripcion AS pi
-        ON e.tipo_y_n_documento = pi.tipo_y_n_documento
-    WHERE e.ano_ingreso = 2026
-        AND pi.primer_ingreso = 2026
-    GROUP BY e.carrera*/
+    GROUP BY codigo_carrera*/
 
 /*HISTÓRICO DE PRIMEROS INGRESOS*/
 /*SELECT DISTINCT COUNT(DISTINCT e.tipo_y_n_documento),
-    substr(e.carrera,2, 9) as carrera, e.ano_ingreso
+    substr(e.carrera,2, 9) as codigo_carrera, propuestas.tipo
     FROM estudiantes AS e
     LEFT JOIN preinscriptos AS p
         ON p.identificacion = e.tipo_y_n_documento
     LEFT JOIN primera_inscripcion AS pi
         ON e.tipo_y_n_documento = pi.tipo_y_n_documento
-    WHERE e.ano_ingreso >= 2022
+    LEFT JOIN propuestas
+        ON (propuestas.codigo = codigo_carrera
+        OR propuestas.codigo = CONCAT(codigo_carrera, 'P'))
+    WHERE e.ano_ingreso > 2021
         AND pi.primer_ingreso = e.ano_ingreso
-    GROUP BY e.carrera, e.ano_ingreso*/
+    GROUP BY codigo_carrera, e.ano_ingreso*/
+
+
+/*CON MÁS DE UNA CARRERA*/
+/*SELECT  cantidad_carreras, COUNT(*) AS cantidad_estudiantes_con_mas_de_una_carrera
+FROM (
+    SELECT e.tipo_y_n_documento, COUNT(DISTINCT e.carrera) AS cantidad_carreras
+        FROM estudiantes AS e
+        LEFT JOIN preinscriptos AS p
+            ON p.identificacion = e.tipo_y_n_documento
+        LEFT JOIN primera_inscripcion AS pi
+            ON e.tipo_y_n_documento = pi.tipo_y_n_documento
+        LEFT JOIN propuestas
+            ON propuestas.codigo = substr(e.carrera, 2, 9)
+        WHERE e.ano_ingreso = 2026
+            AND pi.primer_ingreso = 2026
+        GROUP BY e.tipo_y_n_documento
+        
+)
+GROUP BY cantidad_carreras*/
+
+/*HOMOLOGACIONES*/
+SELECT e.ano_ingreso, COUNT(DISTINCT e.tipo_y_n_documento),
+    substr(e.carrera,2, 9) as codigo_carrera, propuestas.tipo
+    FROM estudiantes AS e
+    LEFT JOIN preinscriptos AS p
+        ON p.identificacion = e.tipo_y_n_documento
+    LEFT JOIN primera_inscripcion AS pi
+        ON e.tipo_y_n_documento = pi.tipo_y_n_documento
+    LEFT JOIN propuestas
+        ON (propuestas.codigo = codigo_carrera
+        OR propuestas.codigo = CONCAT(codigo_carrera, 'P'))
+    WHERE e.ano_ingreso > 2021
+        AND pi.primer_ingreso < e.ano_ingreso
+    GROUP BY codigo_carrera, e.ano_ingreso

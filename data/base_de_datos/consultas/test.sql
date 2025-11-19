@@ -16,7 +16,7 @@ SELECT DISTINCT e.tipo_y_n_documento, e.apellido_y_nombre,
     WHERE e.ano_ingreso = 2026
         AND pi.primer_ingreso = 2026
         AND origen_preinsc = 'Revisar'*/
-
+/*
 WITH primera_inscripcion AS (
             SELECT e.tipo_y_n_documento, MIN(e.ano_ingreso) AS primer_ingreso
             FROM estudiantes AS e
@@ -31,4 +31,6 @@ WITH primera_inscripcion AS (
                 ON p.codigo LIKE '%p.carrera%'
             WHERE e.ano_ingreso = 2026
                 AND pi.primer_ingreso = e.ano_ingreso
-            GROUP BY p.codigo
+            GROUP BY p.codigo*/
+
+DELETE FROM inscripciones_carreras WHERE anio = 2026

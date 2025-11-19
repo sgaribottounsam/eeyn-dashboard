@@ -28,6 +28,8 @@ from ..data.loader import (
     cargar_nuevos_inscriptos_primer_ingreso,
     cargar_nuevos_inscriptos_por_carrera,
     cargar_nuevos_inscriptos_historico,
+    cargar_cambios_carrera_por_carrera,
+    cargar_cambios_carrera_historico,
 )
 
 # --- Registro de la Página ---
@@ -205,8 +207,8 @@ def grafico_distribucion_estado():
     fig = px.bar(df, x='estado', y='cantidad', title='Distribución de Preinscriptos por Estado',
                  labels={'estado': 'Estado de Preinscripción', 'cantidad': 'Cantidad de Alumnos'},
                  template='plotly_white', text_auto=True)
-    fig.update_traces(marker_color='#004B8D', textposition='inside')
-    fig.update_layout(title_x=0.5, xaxis_tickangle=-45)
+    fig.update_traces(marker_color='#004B8D', textposition='inside', textfont=dict(size=10))
+    fig.update_layout(title_x=0.5, xaxis_tickangle=-45, font=dict(size=10))
     return fig
 
 def grafico_inscriptos_grado_2026():
@@ -240,33 +242,36 @@ def grafico_inscriptos_grado_2026():
                  color='codigo',
                  color_discrete_map=COLORES_CARRERAS
                 )
-    fig.update_traces(textposition='inside')
-    fig.update_layout(title_x=0.5, xaxis_tickangle=-30, showlegend=False)
+    fig.update_traces(textposition='inside', textfont=dict(size=10))
+    fig.update_layout(title_x=0.5, xaxis_tickangle=-30, showlegend=False, font=dict(size=10))
     return fig
 
 def grafico_origen_preinscripcion(df):
     """Crea un gráfico de torta con el origen de la preinscripción."""
     if df.empty:
         return px.pie(title="Origen de la preinscripción (No hay datos)")
-    
+
     total = df['cantidad'].sum()
+
     fig = px.pie(df, names='origen', values='cantidad',
                  title=f'Origen de la preinscripción (Total: {total})',
                  template='plotly_white')
-    fig.update_traces(texttemplate='%{percent:.1%} (Cant: %{value})')
-    fig.update_layout(title_x=0.5)
+    fig.update_traces(texttemplate='%{percent:.1%} (Cant: %{value})', insidetextfont=dict(size=10))
+    fig.update_layout(title_x=0.5, font=dict(size=10))
     return fig
 
 def grafico_nuevos_inscriptos_primer_ingreso(df):
-    """Crea un gráfico de barras para los nuevos inscriptos de primer ingreso."""
+    """Crea un gráfico de torta para los nuevos inscriptos de primer ingreso."""
     if df.empty:
-        return px.bar(title="Nuevos Inscriptos: Primer Ingreso (No hay datos)")
+        return px.pie(title="Nuevos Inscriptos: Primer Ingreso (No hay datos)")
     
-    fig = px.bar(df, x='primera_carrera', y='cantidad', title='Nuevos Inscriptos: Primer Ingreso',
-                 labels={'primera_carrera': 'Tipo de Ingreso', 'cantidad': 'Cantidad'},
-                 template='plotly_white', text_auto=True)
-    fig.update_traces(marker_color='#004B8D', textposition='inside')
-    fig.update_layout(title_x=0.5)
+    total = df['cantidad'].sum()
+    
+    fig = px.pie(df, names='primera_carrera', values='cantidad',
+                 title=f'Nuevos Inscriptos: Primer Ingreso (Total: {total})',
+                 template='plotly_white')
+    fig.update_traces(texttemplate='%{percent:.1%} (Cant: %{value})', insidetextfont=dict(size=10))
+    fig.update_layout(title_x=0.5, font=dict(size=10))
     return fig
 
 def grafico_nuevos_inscriptos_por_carrera(df):
@@ -279,8 +284,8 @@ def grafico_nuevos_inscriptos_por_carrera(df):
                  template='plotly_white', text_auto=True,
                  color='carrera',
                  color_discrete_map=COLORES_CARRERAS)
-    fig.update_traces(textposition='inside')
-    fig.update_layout(title_x=0.5, showlegend=False)
+    fig.update_traces(textposition='inside', textfont=dict(size=10))
+    fig.update_layout(title_x=0.5, showlegend=False, font=dict(size=10))
     return fig
 
 def grafico_nuevos_inscriptos_historico(df):
@@ -295,7 +300,7 @@ def grafico_nuevos_inscriptos_historico(df):
                  barmode='stack',
                  color_discrete_map=COLORES_CARRERAS,
                  category_orders={'carrera': list(COLORES_CARRERAS.keys())})
-    fig.update_traces(textposition='inside')
+    fig.update_traces(textposition='inside', textfont=dict(size=10))
     
     # Calcular totales por año y agregar anotaciones
     df_totals = df.groupby('ano_ingreso')['cantidad'].sum().reset_index()
@@ -305,10 +310,54 @@ def grafico_nuevos_inscriptos_historico(df):
             y=row['cantidad'],
             text=f"Total: {row['cantidad']}",
             showarrow=False,
-            yshift=10
+            yshift=10,
+            font=dict(size=10)
         )
         
-    fig.update_layout(title_x=0.5)
+    fig.update_layout(title_x=0.5, font=dict(size=10))
+    return fig
+
+def grafico_cambios_carrera_por_carrera(df):
+    """Crea un gráfico de barras para los cambios de carrera por carrera."""
+    if df.empty:
+        return px.bar(title="Cambios de carrera: Por Carrera (No hay datos)")
+    
+    fig = px.bar(df, x='carrera', y='cantidad', title='Cambios de carrera: Por Carrera',
+                 labels={'carrera': 'Carrera', 'cantidad': 'Cantidad'},
+                 template='plotly_white', text_auto=True,
+                 color='carrera',
+                 color_discrete_map=COLORES_CARRERAS)
+    fig.update_traces(textposition='inside', textfont=dict(size=10))
+    fig.update_layout(title_x=0.5, showlegend=False, font=dict(size=10))
+    return fig
+
+def grafico_cambios_carrera_historico(df):
+    """Crea un gráfico de barras agrupado y apilado para el histórico de cambios de carrera."""
+    if df.empty:
+        return px.bar(title="Cambios de carrera: Histórico (No hay datos)")
+    
+    fig = px.bar(df, x='ano_ingreso', y='cantidad', color='carrera',
+                 title='Cambios de carrera: Histórico',
+                 labels={'ano_ingreso': 'Año de Ingreso', 'cantidad': 'Cantidad', 'carrera': 'Carrera'},
+                 template='plotly_white', text_auto=True,
+                 barmode='stack',
+                 color_discrete_map=COLORES_CARRERAS,
+                 category_orders={'carrera': list(COLORES_CARRERAS.keys())})
+    fig.update_traces(textposition='inside', textfont=dict(size=10))
+    
+    # Calcular totales por año y agregar anotaciones
+    df_totals = df.groupby('ano_ingreso')['cantidad'].sum().reset_index()
+    for _, row in df_totals.iterrows():
+        fig.add_annotation(
+            x=row['ano_ingreso'],
+            y=row['cantidad'],
+            text=f"Total: {row['cantidad']}",
+            showarrow=False,
+            yshift=10,
+            font=dict(size=10)
+        )
+        
+    fig.update_layout(title_x=0.5, font=dict(size=10))
     return fig
 
 # --- Carga de Datos para gráficos no dinámicos ---
@@ -320,6 +369,11 @@ df_origen_preinscripcion = cargar_origen_preinscripcion()
 df_nuevos_inscriptos_primer_ingreso = cargar_nuevos_inscriptos_primer_ingreso()
 df_nuevos_inscriptos_por_carrera = cargar_nuevos_inscriptos_por_carrera()
 df_nuevos_inscriptos_historico = cargar_nuevos_inscriptos_historico()
+df_cambios_carrera_por_carrera = cargar_cambios_carrera_por_carrera()
+df_cambios_carrera_historico = cargar_cambios_carrera_historico()
+
+
+df_origen_preinscripcion_agg = df_origen_preinscripcion.groupby('origen')['cantidad'].sum().reset_index()
 
 
 # --- Filtrado para el gráfico de evolución de inscriptos ---
@@ -416,25 +470,118 @@ layout = html.Div([
     ]),
     html.Div(className="row", children=[
         html.Div([
-            dcc.Graph(id={'type': 'graph-carreras', 'index': 'origen-preinscripcion'}, figure=grafico_origen_preinscripcion(df_origen_preinscripcion)),
+            dcc.Graph(id={'type': 'graph-carreras', 'index': 'cambios-carrera-por-carrera'}, figure=grafico_cambios_carrera_por_carrera(df_cambios_carrera_por_carrera)),
+            dbc.Button("Ampliar", id={'type': 'btn-modal-carreras', 'index': 'cambios-carrera-por-carrera'}, className="btn-sm float-end"),
+            dbc.Modal([
+                dbc.ModalHeader(dbc.ModalTitle("Cambios de carrera: Por Carrera")),
+                dbc.ModalBody(dcc.Graph(figure=grafico_cambios_carrera_por_carrera(df_cambios_carrera_por_carrera), style={'height': '80vh'}))
+            ], id={'type': 'modal-carreras', 'index': 'cambios-carrera-por-carrera'}, size="xl", is_open=False)
+        ], className="six columns position-relative"),
+        html.Div([
+            dcc.RadioItems(
+                id='radio-tipo-propuesta-cambios-historico',
+                options=[
+                    {'label': 'Todas', 'value': 'Todas'},
+                    {'label': 'Grado', 'value': 'Grado'},
+                ],
+                value='Todas',
+                labelStyle={'display': 'inline-block', 'margin-right': '10px'}
+            ),
+            dcc.Graph(id='graph-cambios-carrera-historico', figure=grafico_cambios_carrera_historico(df_cambios_carrera_historico)),
+            dbc.Button("Ampliar", id={'type': 'btn-modal-carreras', 'index': 'cambios-carrera-historico'}, className="btn-sm float-end"),
+            dbc.Modal([
+                dbc.ModalHeader(dbc.ModalTitle("Cambios de carrera: Histórico")),
+                dbc.ModalBody(dcc.Graph(id='modal-graph-cambios-carrera-historico', figure=grafico_cambios_carrera_historico(df_cambios_carrera_historico), style={'height': '80vh'}))
+            ], id={'type': 'modal-carreras', 'index': 'cambios-carrera-historico'}, size="xl", is_open=False)
+        ], className="six columns position-relative"),
+    ]),
+    html.Div(className="row", children=[
+        html.Div([
+            dcc.RadioItems(
+                id='radio-tipo-propuesta-origen',
+                options=[
+                    {'label': 'Todas', 'value': 'Todas'},
+                    {'label': 'Grado', 'value': 'Grado'},
+                    {'label': 'Pregrado', 'value': 'Pregrado'},
+                ],
+                value='Todas',
+                labelStyle={'display': 'inline-block', 'margin-right': '10px'}
+            ),
+            dcc.Graph(id='graph-origen-preinscripcion', figure=grafico_origen_preinscripcion(df_origen_preinscripcion_agg)),
             dbc.Button("Ampliar", id={'type': 'btn-modal-carreras', 'index': 'origen-preinscripcion'}, className="btn-sm float-end"),
             dbc.Modal([
                 dbc.ModalHeader(dbc.ModalTitle("Origen de la Preinscripción")),
-                dbc.ModalBody(dcc.Graph(figure=grafico_origen_preinscripcion(df_origen_preinscripcion), style={'height': '80vh'}))
+                dbc.ModalBody(dcc.Graph(id='modal-graph-origen-preinscripcion', figure=grafico_origen_preinscripcion(df_origen_preinscripcion_agg), style={'height': '80vh'}))
             ], id={'type': 'modal-carreras', 'index': 'origen-preinscripcion'}, size="xl", is_open=False)
         ], className="six columns position-relative"),
         html.Div([
-            dcc.Graph(id={'type': 'graph-carreras', 'index': 'nuevos-inscriptos-historico'}, figure=grafico_nuevos_inscriptos_historico(df_nuevos_inscriptos_historico)),
+            dcc.RadioItems(
+                id='radio-tipo-propuesta-historico',
+                options=[
+                    {'label': 'Todas', 'value': 'Todas'},
+                    {'label': 'Grado', 'value': 'Grado'},
+                ],
+                value='Todas',
+                labelStyle={'display': 'inline-block', 'margin-right': '10px'}
+            ),
+            dcc.Graph(id='graph-nuevos-inscriptos-historico', figure=grafico_nuevos_inscriptos_historico(df_nuevos_inscriptos_historico)),
             dbc.Button("Ampliar", id={'type': 'btn-modal-carreras', 'index': 'nuevos-inscriptos-historico'}, className="btn-sm float-end"),
             dbc.Modal([
                 dbc.ModalHeader(dbc.ModalTitle("Nuevos Inscriptos: Histórico")),
-                dbc.ModalBody(dcc.Graph(figure=grafico_nuevos_inscriptos_historico(df_nuevos_inscriptos_historico), style={'height': '80vh'}))
+                dbc.ModalBody(dcc.Graph(id='modal-graph-nuevos-inscriptos-historico', figure=grafico_nuevos_inscriptos_historico(df_nuevos_inscriptos_historico), style={'height': '80vh'}))
             ], id={'type': 'modal-carreras', 'index': 'nuevos-inscriptos-historico'}, size="xl", is_open=False)
         ], className="six columns position-relative"),
     ]),
 ])
 
 # --- Callbacks ---
+@app.callback(
+    [Output('graph-origen-preinscripcion', 'figure'),
+     Output('modal-graph-origen-preinscripcion', 'figure')],
+    Input('radio-tipo-propuesta-origen', 'value')
+)
+def update_origen_preinscripcion_graphs(tipo_propuesta):
+    df = df_origen_preinscripcion.copy()
+    if tipo_propuesta == 'Todas':
+        df_plot = df.groupby('origen')['cantidad'].sum().reset_index()
+    else:
+        df_plot = df[df['tipo'] == tipo_propuesta]
+    
+    fig = grafico_origen_preinscripcion(df_plot)
+    return fig, fig
+
+@app.callback(
+    [Output('graph-nuevos-inscriptos-historico', 'figure'),
+     Output('modal-graph-nuevos-inscriptos-historico', 'figure')],
+    Input('radio-tipo-propuesta-historico', 'value')
+)
+def update_nuevos_inscriptos_historico_graphs(tipo_propuesta):
+    df = df_nuevos_inscriptos_historico.copy()
+    if tipo_propuesta == 'Grado':
+        # Filter by 'Grado' type and exclude specific careers
+        df = df[df['tipo'] == 'Grado']
+        carreras_a_excluir = ['TE-GUIA-P', 'PR-MPCC-P']
+        df = df[~df['carrera'].isin(carreras_a_excluir)]
+    
+    fig = grafico_nuevos_inscriptos_historico(df)
+    return fig, fig
+
+@app.callback(
+    [Output('graph-cambios-carrera-historico', 'figure'),
+     Output('modal-graph-cambios-carrera-historico', 'figure')],
+    Input('radio-tipo-propuesta-cambios-historico', 'value')
+)
+def update_cambios_carrera_historico_graphs(tipo_propuesta):
+    df = df_cambios_carrera_historico.copy()
+    if tipo_propuesta == 'Grado':
+        # Filter by 'Grado' type and exclude specific careers
+        df = df[df['tipo'] == 'Grado']
+        carreras_a_excluir = ['TE-GUIA-P', 'PR-MPCC-P']
+        df = df[~df['carrera'].isin(carreras_a_excluir)]
+    
+    fig = grafico_cambios_carrera_historico(df)
+    return fig, fig
+
 @app.callback(
     [Output(f'kpi-title-{i+1}-carreras', 'children') for i in range(4)] +
     [Output(f'kpi-value-{i+1}-carreras', 'children') for i in range(4)] +

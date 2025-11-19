@@ -1,13 +1,19 @@
 WITH origen_insc_2026 AS (
-    SELECT ic.n_documento, ic.carrera, IFNULL(p.origen, "Homologación") AS origen
-    FROM inscripciones_carreras ic
+    SELECT 
+        ic.tipo_y_n_documento,
+        propuestas.tipo,
+        GROUP_CONCAT(DISTINCT IFNULL(p.origen, "Homologación") ORDER BY p.origen) AS origen
+    FROM estudiantes AS ic
     LEFT JOIN preinscriptos AS p
-    ON ic.n_documento = p.identificacion
-        AND ic.anio = p.anio
-    WHERE ic.anio = 2026
+        ON ic.tipo_y_n_documento = p.identificacion AND ic.ano_ingreso = p.anio
+    LEFT JOIN propuestas
+        ON propuestas.codigo = ic.carrera
+    WHERE ic.ano_ingreso = 2026
+    GROUP BY ic.tipo_y_n_documento, propuestas.tipo
 )
-
-SELECT origen, COUNT(DISTINCT n_documento) AS cantidad
+SELECT 
+    origen, 
+    tipo, 
+    COUNT(tipo_y_n_documento) AS cantidad
 FROM origen_insc_2026
-WHERE substr(carrera,1,3) IN ('LI-', 'CP-', 'PR-')
-GROUP BY origen
+GROUP BY origen, tipo

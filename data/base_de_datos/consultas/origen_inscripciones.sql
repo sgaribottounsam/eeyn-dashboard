@@ -2,7 +2,7 @@ WITH origen_insc_2026 AS (
     SELECT 
         ic.tipo_y_n_documento,
         propuestas.tipo,
-        GROUP_CONCAT(DISTINCT IFNULL(p.origen, "Homologación") ORDER BY p.origen) AS origen
+        GROUP_CONCAT(DISTINCT IFNULL(p.origen, "Homologación")/* ORDER BY p.origen*/) AS origen
     FROM estudiantes AS ic
     LEFT JOIN preinscriptos AS p
         ON ic.tipo_y_n_documento = p.identificacion AND ic.ano_ingreso = p.anio

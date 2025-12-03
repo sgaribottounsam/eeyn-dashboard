@@ -39,6 +39,25 @@ def get_cohortes():
         conn.close()
     return cohortes
 
+def get_carrera_codes():
+    """Obtiene los códigos de las carreras de grado para los filtros."""
+    conn = sqlite3.connect(DB_PATH)
+    try:
+        query = """
+            SELECT DISTINCT carrera
+            FROM estudiantes
+            WHERE carrera LIKE '%LI-%' OR carrera LIKE '%CP-%'
+        """
+        df = pd.read_sql_query(query, conn)
+        # Extraer el código de la carrera de entre paréntesis
+        codes = df['carrera'].str.extract(r'\((.*?)\)').dropna().iloc[:, 0].unique().tolist()
+        return sorted(codes)
+    except Exception as e:
+        print(f"Error al obtener códigos de carrera: {e}")
+        return []
+    finally:
+        conn.close()
+
 # --- Funciones para KPIs ---
 def get_total_aspirantes_grado(cohorte):
     conn = sqlite3.connect(DB_PATH)
@@ -309,6 +328,62 @@ def create_graph_porcentaje_avance(cohorte):
     finally:
         conn.close()
 
+def create_graph_embudo_avance(cohorte, carrera_filter='Todas'):
+    """Crea el gráfico de embudo de avance."""
+    conn = sqlite3.connect(DB_PATH)
+    try:
+        params = {'cohorte': cohorte}
+        query = f"""
+            SELECT
+                CASE
+                    WHEN e.actividades_aprobadas = 0 THEN 'Sin avance'
+                    WHEN CAST(e.actividades_aprobadas AS REAL) / e.total_actividades < 0.25 THEN 'hasta 25% avance'
+                    WHEN CAST(e.actividades_aprobadas AS REAL) / e.total_actividades < 0.5 THEN '25% a 50% avance'
+                    WHEN CAST(e.actividades_aprobadas AS REAL) / e.total_actividades < 0.75 THEN '50% a 75% avance'
+                    WHEN CAST(e.actividades_aprobadas AS REAL) / e.total_actividades < 0.98 THEN '75% a 99% avance'
+                    WHEN CAST(e.actividades_aprobadas AS REAL) / e.total_actividades < 1.1 THEN '100% avance'
+                    ELSE 'REVISAR AVANCE'
+                END AS avance,
+                COUNT(DISTINCT e.tipo_y_n_documento) AS total_estudiantes
+            FROM estudiantes AS e
+            LEFT JOIN aspirantes AS a ON e.tipo_y_n_documento = a.tipo_y_n_documento
+            WHERE e.tipo_y_n_documento IN (
+                SELECT tipo_y_n_documento FROM aspirantes WHERE ano_ingreso = :cohorte
+            ) AND (e.carrera LIKE '%LI-%' OR e.carrera LIKE '%CP-%')
+            AND (a.actividades_aprobadas >= a.total_actividades OR e.actividades_aprobadas >= 1)
+        """
+
+        if carrera_filter != 'Todas':
+            query += f" AND e.carrera LIKE :carrera_filter"
+            params['carrera_filter'] = f'%({carrera_filter})%'
+
+        query += " GROUP BY avance"
+
+        df = pd.read_sql_query(query, conn, params=params)
+        df = df[df['avance'] != 'REVISAR AVANCE']
+
+        category_order = [
+            'Sin avance', 'hasta 25% avance', '25% a 50% avance', '50% a 75% avance',
+            '75% a 99% avance', '100% avance'
+        ]
+        df['avance'] = pd.Categorical(df['avance'], categories=category_order, ordered=True)
+        df = df.sort_values('avance')
+
+        title = f'Embudo de Avance - Cohorte {cohorte}'
+        if carrera_filter != 'Todas':
+            title += f' ({carrera_filter})'
+
+        fig = px.funnel(df, x='total_estudiantes', y='avance', title=title)
+        fig.update_traces(textinfo='value+percent total')
+
+        return fig
+
+    except Exception as e:
+        print(f"Error al crear gráfico 'Embudo de avance': {e}")
+        return px.bar(title="Error al generar gráfico")
+    finally:
+        conn.close()
+
 # --- Layout de la Página ---
 def create_kpi_card(title, value, card_id):
     """Crea la estructura de una tarjeta KPI."""
@@ -318,6 +393,9 @@ def create_kpi_card(title, value, card_id):
             html.H2(value, id=f'kpi-value-{card_id}'),
         ], className="kpi-content"),
     ], className="three columns kpi-card-container")
+
+carrera_codes = get_carrera_codes()
+carrera_options = [{'label': 'Todas', 'value': 'Todas'}] + [{'label': code, 'value': code} for code in carrera_codes]
 
 layout = html.Div([
     html.H1("Análisis por Cohorte"),
@@ -375,6 +453,25 @@ layout = html.Div([
             ], id='modal-cohorte-4', size="xl", is_open=False)
         ], className="six columns position-relative"),
     ]),
+    html.Div(className="row", children=[
+        html.Div([
+            html.H4("Embudo de Avance de Cohorte"),
+            html.Label("Filtrar por Carrera:"),
+            dcc.RadioItems(
+                id='radio-carrera-embudo',
+                options=carrera_options,
+                value='Todas',
+                inline=True,
+                labelStyle={'margin-right': '20px'}
+            ),
+            dcc.Graph(id='graph-cohorte-5'),
+            dbc.Button("Ampliar", id='btn-modal-cohorte-5', className="btn-sm float-end"),
+            dbc.Modal([
+                dbc.ModalHeader(dbc.ModalTitle("Embudo de Avance")),
+                dbc.ModalBody(dcc.Graph(id='modal-graph-5', style={'height': '80vh'}))
+            ], id='modal-cohorte-5', size="xl", is_open=False)
+        ], className="twelve columns position-relative"),
+    ]),
 ])
 
 # --- Callbacks ---
@@ -419,15 +516,29 @@ def update_page_cohorte(selected_cohorte):
 
     return kpi_cards, fig1, fig2, fig3, fig4, fig1, fig2, fig3, fig4
 
+@app.callback(
+    [Output('graph-cohorte-5', 'figure'),
+     Output('modal-graph-5', 'figure')],
+    [Input('dropdown-cohorte', 'value'),
+     Input('radio-carrera-embudo', 'value')]
+)
+def update_funnel_graph(selected_cohorte, selected_carrera):
+    if not selected_cohorte:
+        empty_fig = px.bar()
+        return empty_fig, empty_fig
 
-for i in range(1, 5):
+    fig = create_graph_embudo_avance(selected_cohorte, selected_carrera)
+
+    return fig, fig
+
+for i in range(1, 6):
     @app.callback(
         Output(f'modal-cohorte-{i}', 'is_open'),
         Input(f'btn-modal-cohorte-{i}', 'n_clicks'),
         State(f'modal-cohorte-{i}', 'is_open'),
         prevent_initial_call=True
     )
-    def toggle_modal_cohorte(n_clicks, is_open):
+    def toggle_modal_cohorte(n_clicks, is_open, i=i):
         if n_clicks:
             return not is_open
         return is_open

@@ -54,39 +54,39 @@ layout = html.Div([
     ]),
     html.Div([
         html.Div([
-            dcc.Graph(id='grafico-estudiantes-activos'),
+            dcc.Graph(id='grafico-estudiantes-activos', config={'displayModeBar': False}),
             dbc.Button("Ampliar", id={'type': 'btn-modal-materias', 'index': 'estudiantes-activos'}, className="btn-sm float-end"),
             dbc.Modal([
                 dbc.ModalHeader(dbc.ModalTitle("Evolución de Estudiantes Activos")),
-                dbc.ModalBody(dcc.Graph(id={'type': 'modal-graph-materias', 'index': 'estudiantes-activos'}, style={'height': '80vh'}))
+                dbc.ModalBody(dcc.Graph(id={'type': 'modal-graph-materias', 'index': 'estudiantes-activos'}, style={'height': '80vh'}, config={'displayModeBar': False}))
             ], id={'type': 'modal-materias', 'index': 'estudiantes-activos'}, size="xl", is_open=False)
         ], className="six columns position-relative"),
         html.Div([
             html.Label("Filtrar evolución por:"),
             dcc.RadioItems(id='filtro-evolucion-insc', options=[{'label': 'Todas', 'value': 'Todas'}, {'label': 'Grado', 'value': 'Grado'}], value='Todas', labelStyle={'display': 'inline-block', 'marginRight': '10px'}),
-            dcc.Graph(id='grafico-evolucion-temporal'),
+            dcc.Graph(id='grafico-evolucion-temporal', config={'displayModeBar': False}),
             dbc.Button("Ampliar", id={'type': 'btn-modal-materias', 'index': 'evolucion-temporal'}, className="btn-sm float-end"),
             dbc.Modal([
                 dbc.ModalHeader(dbc.ModalTitle("Evolución Temporal")),
-                dbc.ModalBody(dcc.Graph(id={'type': 'modal-graph-materias', 'index': 'evolucion-temporal'}, style={'height': '80vh'}))
+                dbc.ModalBody(dcc.Graph(id={'type': 'modal-graph-materias', 'index': 'evolucion-temporal'}, style={'height': '80vh'}, config={'displayModeBar': False}))
             ], id={'type': 'modal-materias', 'index': 'evolucion-temporal'}, size="xl", is_open=False)
         ], className="six columns position-relative"),
     ], className="row"),
     html.Div([
         html.Div([
-            dcc.Graph(id='grafico-insc-cuatri'),
+            dcc.Graph(id='grafico-insc-cuatri', config={'displayModeBar': False}),
             dbc.Button("Ampliar", id={'type': 'btn-modal-materias', 'index': 'insc-cuatri'}, className="btn-sm float-end"),
             dbc.Modal([
                 dbc.ModalHeader(dbc.ModalTitle("Inscripciones por Cuatrimestre")),
-                dbc.ModalBody(dcc.Graph(id={'type': 'modal-graph-materias', 'index': 'insc-cuatri'}, style={'height': '80vh'}))
+                dbc.ModalBody(dcc.Graph(id={'type': 'modal-graph-materias', 'index': 'insc-cuatri'}, style={'height': '80vh'}, config={'displayModeBar': False}))
             ], id={'type': 'modal-materias', 'index': 'insc-cuatri'}, size="xl", is_open=False)
         ], className="six columns position-relative"),
         html.Div([
-            dcc.Graph(id='grafico-cpu'),
+            dcc.Graph(id='grafico-cpu', config={'displayModeBar': False}),
             dbc.Button("Ampliar", id={'type': 'btn-modal-materias', 'index': 'cpu'}, className="btn-sm float-end"),
             dbc.Modal([
                 dbc.ModalHeader(dbc.ModalTitle("Materias CPU")),
-                dbc.ModalBody(dcc.Graph(id={'type': 'modal-graph-materias', 'index': 'cpu'}, style={'height': '80vh'}))
+                dbc.ModalBody(dcc.Graph(id={'type': 'modal-graph-materias', 'index': 'cpu'}, style={'height': '80vh'}, config={'displayModeBar': False}))
             ], id={'type': 'modal-materias', 'index': 'cpu'}, size="xl", is_open=False)
         ], className="six columns position-relative"),
     ], className="row"),

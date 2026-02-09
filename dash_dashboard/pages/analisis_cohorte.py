@@ -175,7 +175,7 @@ def create_graph_aspirantes_carrera(cohorte):
         fig = px.bar(data, 
                      x='categoria', 
                      y='total', 
-                     title='Aspirantes a carrera',
+                     title='<b>Aspirantes a carrera</b>',
                      text='total',
                      color='categoria',
                      color_discrete_map=colors)
@@ -186,7 +186,7 @@ def create_graph_aspirantes_carrera(cohorte):
 
     except Exception as e:
         print(f"Error al crear gráfico 'Aspirantes a carrera': {e}")
-        return dcc.Graph(figure=px.bar(title="Error al generar gráfico"))
+        return dcc.Graph(figure=px.bar(title="<b>Error al generar gráfico</b>"))
     finally:
         conn.close()
 
@@ -215,7 +215,7 @@ def create_graph_contexto_anual(cohorte):
                      x='ano_ingreso', 
                      y='total_ingresantes',
                      color='condicion_CPU',
-                     title='Contexto anual',
+                     title='<b>Contexto anual</b>',
                      labels={'ano_ingreso': 'Cohorte', 'total_ingresantes': 'Cantidad de Aspirantes', 'condicion_CPU': 'Condición'},
                      text='total_ingresantes',
                      barmode='stack')
@@ -228,7 +228,7 @@ def create_graph_contexto_anual(cohorte):
 
     except Exception as e:
         print(f"Error al crear gráfico 'Contexto anual': {e}")
-        return dcc.Graph(figure=px.bar(title="Error al generar gráfico"))
+        return dcc.Graph(figure=px.bar(title="<b>Error al generar gráfico</b>"))
     finally:
         conn.close()
 
@@ -254,7 +254,7 @@ def create_graph_estudiantes_grado(cohorte):
         fig = px.bar(df, 
                      x='carrera_code', 
                      y='total_ingresantes', 
-                     title='Estudiantes de grado',
+                     title='<b>Estudiantes de grado</b>',
                      text='total_ingresantes')
         
         fig.update_layout(xaxis_title="Carrera", yaxis_title="Cantidad de Estudiantes")
@@ -263,7 +263,7 @@ def create_graph_estudiantes_grado(cohorte):
 
     except Exception as e:
         print(f"Error al crear gráfico 'Estudiantes de grado': {e}")
-        return dcc.Graph(figure=px.bar(title="Error al generar gráfico"))
+        return dcc.Graph(figure=px.bar(title="<b>Error al generar gráfico</b>"))
     finally:
         conn.close()
 
@@ -314,7 +314,7 @@ def create_graph_porcentaje_avance(cohorte):
                      x='avance', 
                      y='total_estudiantes', 
                      color='carrera_code',
-                     title='Porcentaje de avance por carrera',
+                     title='<b>Porcentaje de avance por carrera</b>',
                      barmode='stack')
         
         fig.update_layout(xaxis_title="Porcentaje de Avance", yaxis_title="Cantidad de Estudiantes", legend=dict(orientation="h", yanchor="bottom", y=-0.4, xanchor="center", x=0.5))
@@ -324,7 +324,7 @@ def create_graph_porcentaje_avance(cohorte):
 
     except Exception as e:
         print(f"Error al crear gráfico 'Porcentaje de avance': {e}")
-        return dcc.Graph(figure=px.bar(title="Error al generar gráfico"))
+        return dcc.Graph(figure=px.bar(title="<b>Error al generar gráfico</b>"))
     finally:
         conn.close()
 
@@ -369,9 +369,9 @@ def create_graph_embudo_avance(cohorte, carrera_filter='Todas'):
         df['avance'] = pd.Categorical(df['avance'], categories=category_order, ordered=True)
         df = df.sort_values('avance')
 
-        title = f'Embudo de Avance - Cohorte {cohorte}'
+        title = f'<b>Embudo de Avance - Cohorte {cohorte}</b>'
         if carrera_filter != 'Todas':
-            title += f' ({carrera_filter})'
+            title += f' <b>({carrera_filter})</b>'
 
         fig = px.funnel(df, x='total_estudiantes', y='avance', title=title)
         fig.update_traces(textinfo='value+percent total')
@@ -380,7 +380,7 @@ def create_graph_embudo_avance(cohorte, carrera_filter='Todas'):
 
     except Exception as e:
         print(f"Error al crear gráfico 'Embudo de avance': {e}")
-        return px.bar(title="Error al generar gráfico")
+        return px.bar(title="<b>Error al generar gráfico</b>")
     finally:
         conn.close()
 
@@ -419,37 +419,37 @@ layout = html.Div([
     # Fila de Gráficos
     html.Div(className="row", children=[
         html.Div([
-            dcc.Graph(id='graph-cohorte-1'),
+            dcc.Graph(id='graph-cohorte-1', config={'displayModeBar': False}),
             dbc.Button("Ampliar", id='btn-modal-cohorte-1', className="btn-sm float-end"),
             dbc.Modal([
                 dbc.ModalHeader(dbc.ModalTitle("Aspirantes a carrera")),
-                dbc.ModalBody(dcc.Graph(id='modal-graph-1', style={'height': '80vh'}))
+                dbc.ModalBody(dcc.Graph(id='modal-graph-1', style={'height': '80vh'}, config={'displayModeBar': False}))
             ], id='modal-cohorte-1', size="xl", is_open=False)
         ], className="six columns position-relative"),
         html.Div([
-            dcc.Graph(id='graph-cohorte-2'),
+            dcc.Graph(id='graph-cohorte-2', config={'displayModeBar': False}),
             dbc.Button("Ampliar", id='btn-modal-cohorte-2', className="btn-sm float-end"),
             dbc.Modal([
                 dbc.ModalHeader(dbc.ModalTitle("Contexto anual")),
-                dbc.ModalBody(dcc.Graph(id='modal-graph-2', style={'height': '80vh'}))
+                dbc.ModalBody(dcc.Graph(id='modal-graph-2', style={'height': '80vh'}, config={'displayModeBar': False}))
             ], id='modal-cohorte-2', size="xl", is_open=False)
         ], className="six columns position-relative"),
     ]),
     html.Div(className="row", children=[
         html.Div([
-            dcc.Graph(id='graph-cohorte-3'),
+            dcc.Graph(id='graph-cohorte-3', config={'displayModeBar': False}),
             dbc.Button("Ampliar", id='btn-modal-cohorte-3', className="btn-sm float-end"),
             dbc.Modal([
                 dbc.ModalHeader(dbc.ModalTitle("Estudiantes de grado")),
-                dbc.ModalBody(dcc.Graph(id='modal-graph-3', style={'height': '80vh'}))
+                dbc.ModalBody(dcc.Graph(id='modal-graph-3', style={'height': '80vh'}, config={'displayModeBar': False}))
             ], id='modal-cohorte-3', size="xl", is_open=False)
         ], className="six columns position-relative"),
         html.Div([
-            dcc.Graph(id='graph-cohorte-4'),
+            dcc.Graph(id='graph-cohorte-4', config={'displayModeBar': False}),
             dbc.Button("Ampliar", id='btn-modal-cohorte-4', className="btn-sm float-end"),
             dbc.Modal([
                 dbc.ModalHeader(dbc.ModalTitle("Porcentaje de avance")),
-                dbc.ModalBody(dcc.Graph(id='modal-graph-4', style={'height': '80vh'}))
+                dbc.ModalBody(dcc.Graph(id='modal-graph-4', style={'height': '80vh'}, config={'displayModeBar': False}))
             ], id='modal-cohorte-4', size="xl", is_open=False)
         ], className="six columns position-relative"),
     ]),
@@ -464,11 +464,11 @@ layout = html.Div([
                 inline=True,
                 labelStyle={'margin-right': '20px'}
             ),
-            dcc.Graph(id='graph-cohorte-5'),
+            dcc.Graph(id='graph-cohorte-5', config={'displayModeBar': False}),
             dbc.Button("Ampliar", id='btn-modal-cohorte-5', className="btn-sm float-end"),
             dbc.Modal([
                 dbc.ModalHeader(dbc.ModalTitle("Embudo de Avance")),
-                dbc.ModalBody(dcc.Graph(id='modal-graph-5', style={'height': '80vh'}))
+                dbc.ModalBody(dcc.Graph(id='modal-graph-5', style={'height': '80vh'}, config={'displayModeBar': False}))
             ], id='modal-cohorte-5', size="xl", is_open=False)
         ], className="twelve columns position-relative"),
     ]),

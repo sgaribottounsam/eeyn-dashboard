@@ -5,16 +5,57 @@ import plotly.graph_objects as go
 # --- CONFIGURACIÓN GLOBAL DE GRÁFICOS ---
 GRAPH_HEIGHT = 350 # Variable para controlar la altura de todos los gráficos
 
+COMMON_LAYOUT = dict(
+    height=GRAPH_HEIGHT,
+    plot_bgcolor='white',
+    uniformtext_minsize=10, 
+    uniformtext_mode='show',
+    font=dict(size=10)
+)
+
 # --- CONFIGURACIÓN DE COLORES ---
 COLORES_CARRERAS = {
+    # Grado
     'CP-CCCP-PC': '#5dae8b',
+    'CCCP': '#5dae8b',
+    '(CP-CCCP-PC) CONTADOR PÚBLICO': '#5dae8b',
+    'CP-CCCP-PC-Plan nuevo': '#5dae8b',
+    'CP-CCCP-PC-Plan Viejo': '#9dceb9',
     'LI-LAGE-P': '#f6f49d',
+    'LI-LAGE-P-Plan nuevo': '#f6f49d',
+    'LI-LAGE-P-Plan Viejo': '#faf8bb',
+    'LAGE': '#f6f49d',
+    '(LI-LAGE-P) LICENCIATURA EN ADMINISTRACIÓN Y GESTIÓN EMPRESARIAL': '#f6f49d',
     'LI-LECO-P': '#ff7676',
+    'LECO': '#ff7676',
+    '(LI-LECO-P) LICENCIATURA EN ECONOMÍA': '#ff7676',
+    'LI-LECO-P-Plan nuevo': '#ff7676',
+    'LI-LECO-P-Plan Viejo': '#ffacac',
     'LI-LEDC-P': '#FF8C00',
+    '(LI-LEDC-P) LICENCIATURA EN ECONOMÍA DEL CONOCIMIENTO': '#FF8C00',
     'LI-LTUR-P': '#466c95',
+    'LTUR': '#466c95',
+    '(LI-LTUR-P) LICENCIATURA EN TURISMO': '#466c95',
+    'LI-LTUR-P-Plan nuevo': '#466c95',
+    'LI-LTUR-P-Plan Viejo': '#90a6bf',
+    
+    # Pregrado
     'TE-MPCO-P': '#c5705d',
     'TE-GUIA-P': '#8B4513',
-    'CI-EEYN-P': '#8200e1'
+    '(TE-GUIA-P) TECNICATURA UNIVERSITARIA EN GUÍA DE TURISMO': '#8B4513',
+    
+    # Nuevas / 2025 (Asignando colores similares o nuevos)
+    'CI-EEYN-P': '#8200e1', # Ciclo Introductorio (Violeta existente)
+    'CI-MPCC-P': '#A0522D', # Ciclo Introductorio Martillero (Sienna, similar a GUIA)
+    'CV-EEYN-P': '#9370DB', # Curso Vocacional ? (MediumPurple)
+    'DO-CECO-P': '#DC143C', # Doctorado (Crimson)
+    'DO-EINN-P': '#B22222', # Doctorado (FireBrick)
+    'ES-EGTI-P': '#20B2AA', # Especialización (LightSeaGreen)
+    'MA-DGTI-P': '#4169E1', # Maestría (RoyalBlue)
+    'MA-FINA-P': '#1E90FF', # Maestría (DodgerBlue)
+    'NG-EEYN-P': '#708090', # No Grado ? (SlateGray)
+    'PR-MPCC-P': '#D2691E', # Martillero Público (Chocolate)
+    '(PR-MPCC-P) MARTILLERO PÚBLICO Y CORREDOR DE COMERCIO': '#D2691E',
 }
 
 # --- Funciones de Utilidad ---
@@ -25,6 +66,15 @@ def darken_color(hex_color, factor=0.7):
     rgb = tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
     dark_rgb = tuple(int(c * factor) for c in rgb)
     return f"#{dark_rgb[0]:02x}{dark_rgb[1]:02x}{dark_rgb[2]:02x}"
+
+def lighten_color(hex_color, factor=0.5):
+    """Aclara un color hexadecimal mezclándolo con blanco."""
+    if hex_color.startswith('#'):
+        hex_color = hex_color.lstrip('#')
+    rgb = tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+    # fórmula: (255 - c) * factor + c
+    light_rgb = tuple(int((255 - c) * factor + c) for c in rgb)
+    return f"#{light_rgb[0]:02x}{light_rgb[1]:02x}{light_rgb[2]:02x}"
 
 def estandarizar_nombres_df(df, mapeo_columnas):
     """Renombra las columnas de un DataFrame según un mapeo, si existen."""
@@ -37,17 +87,18 @@ def estandarizar_nombres_df(df, mapeo_columnas):
 # --- Funciones de Gráficos ---
 
 def crear_grafico_vacio(titulo="Datos no disponibles"):
+    if not titulo.startswith("<b>"):
+        titulo = f"<b>{titulo}</b>"
     fig = px.bar()
     fig.update_layout(
+        **COMMON_LAYOUT,
         title=titulo,
         xaxis={'visible': False}, yaxis={'visible': False},
         annotations=[{
             'text': 'No se pudieron cargar los datos para este gráfico.',
             'xref': 'paper', 'yref': 'paper',
             'showarrow': False, 'font': {'size': 14}
-        }],
-        plot_bgcolor='white',
-        height=GRAPH_HEIGHT
+        }]
     )
     return fig
 
@@ -64,7 +115,7 @@ def crear_grafico_evolucion_egresados(df):
 
     fig = px.bar(
         df_agrupado, x='anio_academico', y='cantidad', color='propuesta',
-        title='🎓 Evolución de Egresados por Año Académico',
+        title='<b>Evolución de Egresados por Año Académico</b>',
         labels={'anio_academico': 'Año Académico', 'cantidad': 'Cantidad de Egresados', 'propuesta': 'Carrera'},
         color_discrete_map=COLORES_CARRERAS,
         text='cantidad'
@@ -79,11 +130,10 @@ def crear_grafico_evolucion_egresados(df):
     ))
 
     fig.update_layout(
-        height=GRAPH_HEIGHT,
+        **COMMON_LAYOUT,
         xaxis_title="Año Académico", yaxis_title="Cantidad de Egresados",
-        plot_bgcolor='white', barmode='stack', legend_title_text='Carrera',
-        yaxis_range=[0, df_totales['cantidad'].max() * 1.15],
-        font=dict(size=10)
+        barmode='stack', legend_title_text='Carrera',
+        yaxis_range=[0, df_totales['cantidad'].max() * 1.15]
     )
     return fig
 
@@ -97,9 +147,9 @@ def crear_grafico_estudiantes_por_carrera(df_evolucion, filtro_tipo):
     carreras_2025 = carreras_2025.sort_values('estudiantes', ascending=True)
     df_filtered = carreras_2025[carreras_2025['carrera'].isin(COLORES_CARRERAS.keys())]
     fig = px.bar(df_filtered, y='carrera', x='estudiantes', orientation='h', color='carrera',
-                 color_discrete_map=COLORES_CARRERAS, text='estudiantes', title=f"👥 Estudiantes por Carrera 2025 ({filtro_tipo})")
+                 color_discrete_map=COLORES_CARRERAS, text='estudiantes', title=f"<b>Estudiantes por Carrera 2025 ({filtro_tipo})</b>")
     fig.update_traces(textposition='outside', textfont=dict(size=10))
-    fig.update_layout(height=GRAPH_HEIGHT, showlegend=False, xaxis_title="Cantidad de Estudiantes", yaxis_title=None, plot_bgcolor='white', margin=dict(l=20, r=20, t=40, b=20), font=dict(size=10))
+    fig.update_layout(**COMMON_LAYOUT, showlegend=False, xaxis_title="Cantidad de Estudiantes", yaxis_title=None, margin=dict(l=20, r=20, t=40, b=20))
     return fig
 
 def crear_grafico_evolucion_temporal(df_evolucion, filtro_tipo):
@@ -108,8 +158,8 @@ def crear_grafico_evolucion_temporal(df_evolucion, filtro_tipo):
 
     df_melted = df_plot.melt(id_vars=['inscripciones'], value_vars=['2020', '2021', '2022', '2023', '2024', '2025'], var_name='año', value_name='estudiantes')
     df_melted.columns = ['carrera', 'año', 'estudiantes']
-    fig = px.line(df_melted, x='año', y='estudiantes', color='carrera', color_discrete_map=COLORES_CARRERAS, markers=True, title=f"📈 Evolución Temporal por Carrera ({filtro_tipo})")
-    fig.update_layout(height=GRAPH_HEIGHT, xaxis_title="Año", yaxis_title="Cantidad de Estudiantes", plot_bgcolor='white', margin=dict(l=20, r=20, t=40, b=20), font=dict(size=10))
+    fig = px.line(df_melted, x='año', y='estudiantes', color='carrera', color_discrete_map=COLORES_CARRERAS, markers=True, title=f"<b>Evolución Temporal por Carrera ({filtro_tipo})</b>")
+    fig.update_layout(**COMMON_LAYOUT, xaxis_title="Año", yaxis_title="Cantidad de Estudiantes", margin=dict(l=20, r=20, t=40, b=20))
     return fig
 
 def crear_grafico_inscripciones_cuatrimestre(df_evolucion):
@@ -118,18 +168,18 @@ def crear_grafico_inscripciones_cuatrimestre(df_evolucion):
 
     df_melted = df_plot.melt(id_vars=['inscripciones'], value_vars=['2022', '2023', '2024', '2025'], var_name='año', value_name='estudiantes')
     df_melted.columns = ['carrera', 'año', 'estudiantes']
-    fig = px.bar(df_melted, x='año', y='estudiantes', color='carrera', color_discrete_map=COLORES_CARRERAS, title="📅 Inscripciones 2do Cuatrimestre por Año", text='estudiantes')
+    fig = px.bar(df_melted, x='año', y='estudiantes', color='carrera', color_discrete_map=COLORES_CARRERAS, title="<b>Inscripciones 2do Cuatrimestre por Año</b>", text='estudiantes')
     fig.update_traces(textposition='inside', textfont=dict(size=10))
-    fig.update_layout(height=GRAPH_HEIGHT, xaxis_title="Año", yaxis_title="Cantidad de Inscripciones", plot_bgcolor='white', margin=dict(l=20, r=20, t=40, b=20), font=dict(size=10))
+    fig.update_layout(**COMMON_LAYOUT, xaxis_title="Año", yaxis_title="Cantidad de Inscripciones", margin=dict(l=20, r=20, t=40, b=20))
     return fig
 
 def crear_grafico_cpu_materias(df_cpu):
     if df_cpu.empty: return crear_grafico_vacio("CPU: Inscripciones por Materias")
     df_plot = estandarizar_nombres_df(df_cpu, {'Inscriptos al CPU': 'inscriptos_al_cpu', 'Inscriptos': 'inscriptos'})
 
-    fig = px.bar(df_plot, x='inscriptos_al_cpu', y='inscriptos', color_discrete_sequence=['#8200e1'], text='inscriptos', title="📚 CPU: Inscripciones por Cantidad de Materias")
+    fig = px.bar(df_plot, x='inscriptos_al_cpu', y='inscriptos', color_discrete_sequence=['#8200e1'], text='inscriptos', title="<b>CPU: Inscripciones por Cantidad de Materias</b>")
     fig.update_traces(textposition='outside', textfont=dict(size=10))
-    fig.update_layout(height=GRAPH_HEIGHT, showlegend=False, xaxis_title="Cantidad de Materias", yaxis_title="Cantidad de Inscriptos", plot_bgcolor='white', margin=dict(l=20, r=20, t=40, b=20), font=dict(size=10))
+    fig.update_layout(**COMMON_LAYOUT, showlegend=False, xaxis_title="Cantidad de Materias", yaxis_title="Cantidad de Inscriptos", margin=dict(l=20, r=20, t=40, b=20))
     return fig
 
 def crear_grafico_cantidad_graduados_por_plan(df):
@@ -146,14 +196,14 @@ def crear_grafico_cantidad_graduados_por_plan(df):
     for carrera in df_plot['propuesta'].unique():
         base_color = COLORES_CARRERAS.get(carrera, '#cccccc')
         color_map[f"{carrera} - Plan Nuevo"] = base_color
-        color_map[f"{carrera} - Plan Viejo"] = darken_color(base_color, 0.7)
+        color_map[f"{carrera} - Plan Viejo"] = lighten_color(base_color, 0.4)
     df_plot['carrera_y_plan'] = df_plot['propuesta'] + " - " + df_plot['plan']
     
     # Ordenar para apilar correctamente (Viejo abajo, Nuevo arriba)
     df_plot.sort_values(by='carrera_y_plan', ascending=False, inplace=True)
 
     fig = px.bar(df_plot, x='propuesta', y='cantidad', color='carrera_y_plan',
-                 title='👨‍🎓 Cantidad de graduados por carrera y plan',
+                 title='<b>Cantidad de graduados por carrera y plan</b>',
                  labels={'cantidad': 'Cantidad de Egresados', 'propuesta': 'Carrera', 'carrera_y_plan': 'Carrera y Plan'},
                  orientation='v', color_discrete_map=color_map, barmode='stack', text='cantidad',
                  category_orders={'propuesta': total_por_carrera})
@@ -165,7 +215,7 @@ def crear_grafico_cantidad_graduados_por_plan(df):
         if 'LI-LECO-P' in trace.name or 'CP-CCCP-PC' in trace.name:
             trace.textfont.size = 14
 
-    fig.update_layout(height=GRAPH_HEIGHT, xaxis_title="Carrera", yaxis_title="Cantidad de Egresados", plot_bgcolor='white', showlegend=True, margin=dict(l=20, r=20, t=40, b=20), font=dict(size=10))
+    fig.update_layout(**COMMON_LAYOUT, xaxis_title="Carrera", yaxis_title="Cantidad de Egresados", showlegend=True, margin=dict(l=20, r=20, t=40, b=20))
     return fig
 
 def crear_grafico_tasa_graduacion(df):
@@ -180,14 +230,14 @@ def crear_grafico_tasa_graduacion(df):
     for carrera in df_plot['propuesta'].unique():
         base_color = COLORES_CARRERAS.get(carrera, '#cccccc')
         color_map[f"{carrera} - Plan Nuevo"] = base_color
-        color_map[f"{carrera} - Plan Viejo"] = darken_color(base_color, 0.7)
+        color_map[f"{carrera} - Plan Viejo"] = lighten_color(base_color, 0.4)
     df_plot['carrera_y_plan'] = df_plot['propuesta'] + " - " + df_plot['plan']
     fig = px.bar(df_plot, x='propuesta', y='tasa', color='carrera_y_plan',
-                 title='📊 Tasa de graduación',
+                 title='<b>Tasa de graduación</b>',
                  labels={'tasa': 'Tasa de Graduación (%)', 'propuesta': 'Carrera', 'carrera_y_plan': 'Carrera y Plan'},
                  barmode='group', orientation='v', color_discrete_map=color_map, text='tasa')
     fig.update_traces(textposition='outside', texttemplate='%{text:.2f}%', textfont=dict(size=10))
-    fig.update_layout(height=GRAPH_HEIGHT, xaxis_title="Carrera", yaxis_title="Tasa de Graduación (%)", yaxis_range=[0, df_plot['tasa'].max() * 1.15], plot_bgcolor='white', showlegend=True, margin=dict(l=20, r=20, t=40, b=20), font=dict(size=10))
+    fig.update_layout(**COMMON_LAYOUT, xaxis_title="Carrera", yaxis_title="Tasa de Graduación (%)", yaxis_range=[0, df_plot['tasa'].max() * 1.15], showlegend=True, margin=dict(l=20, r=20, t=40, b=20))
     return fig
 
 def crear_grafico_duracion_carrera(df):
@@ -200,9 +250,9 @@ def crear_grafico_duracion_carrera(df):
     df_plot = df_plot[['carrera_plan', 'duracion_promedio']].copy()
     df_plot.columns = ['carrera', 'duracion']
     df_plot = df_plot.sort_values('duracion', ascending=True)
-    fig = px.bar(df_plot, x='duracion', y='carrera', title='⏳ Duración Promedio de la Carrera (Total)', labels={'duracion': 'Años', 'carrera': 'Carrera y Plan'}, text='duracion')
+    fig = px.bar(df_plot, x='duracion', y='carrera', title='<b>Duración Promedio de la Carrera (Total)</b>', labels={'duracion': 'Años', 'carrera': 'Carrera y Plan'}, text='duracion')
     fig.update_traces(texttemplate='%{text:.1f} años', textposition='inside', textfont=dict(size=10))
-    fig.update_layout(height=GRAPH_HEIGHT, xaxis_title="Duración promedio en años", yaxis_title=None, plot_bgcolor='white', showlegend=False, margin=dict(l=20, r=20, t=40, b=20), font=dict(size=10))
+    fig.update_layout(**COMMON_LAYOUT, xaxis_title="Duración promedio en años", yaxis_title=None, showlegend=False, margin=dict(l=20, r=20, t=40, b=20))
     return fig
 
 # --- Gráficos para la página de Inscripciones a Carreras ---
@@ -212,9 +262,9 @@ def crear_grafico_evolucion_inscriptos_diarios(df):
     if df.empty:
         return crear_grafico_vacio("Evolución de Inscriptos por Día")
     
-    fig = px.line(df, x='fecha_insc', y='cantidad', title='📈 Evolución de Inscriptos por Día',
+    fig = px.line(df, x='fecha_insc', y='cantidad', title='<b>Evolución de Inscriptos por Día</b>',
                   labels={'fecha_insc': 'Fecha', 'cantidad': 'Inscriptos'}, markers=True)
-    fig.update_layout(height=GRAPH_HEIGHT, plot_bgcolor='white')
+    fig.update_layout(**COMMON_LAYOUT)
     return fig
 
 def crear_grafico_comparativa_inscriptos_carrera(df):
@@ -226,11 +276,11 @@ def crear_grafico_comparativa_inscriptos_carrera(df):
                         var_name='tipo', value_name='cantidad')
 
     fig = px.bar(df_melted, x='carrera', y='cantidad', color='tipo', barmode='group',
-                 title='👥 Comparativa Inscriptos vs. Preinscriptos por Carrera',
+                 title='<b>Comparativa Inscriptos vs. Preinscriptos por Carrera</b>',
                  labels={'carrera': 'Carrera', 'cantidad': 'Cantidad', 'tipo': 'Estado'},
                  text='cantidad')
     fig.update_traces(textposition='outside')
-    fig.update_layout(height=GRAPH_HEIGHT, plot_bgcolor='white')
+    fig.update_layout(**COMMON_LAYOUT)
     return fig
 
 def crear_grafico_distribucion_preinscriptos_estado(df):
@@ -239,10 +289,10 @@ def crear_grafico_distribucion_preinscriptos_estado(df):
         return crear_grafico_vacio("Distribución de Preinscriptos por Estado")
 
     fig = px.pie(df, names='estado', values='cantidad', 
-                 title='📊 Distribución de Preinscriptos por Estado',
+                 title='<b>Distribución de Preinscriptos por Estado</b>',
                  hole=0.3)
     fig.update_traces(textposition='inside', textinfo='percent+label')
-    fig.update_layout(height=GRAPH_HEIGHT, showlegend=False)
+    fig.update_layout(**COMMON_LAYOUT, showlegend=False)
     return fig
 
 def crear_grafico_inscriptos_grado_por_dia(df):
@@ -278,13 +328,11 @@ def crear_grafico_inscriptos_grado_por_dia(df):
         ))
 
     fig.update_layout(
-        title_text='Inscriptos de Grado por Día (Acumulado)',
+        **COMMON_LAYOUT,
+        title_text='<b>Inscriptos de Grado por Día (Acumulado)</b>',
         xaxis_title='Fecha',
         yaxis_title='Total Acumulado de Inscriptos',
-        legend_title='Año',
-        height=GRAPH_HEIGHT,
-        plot_bgcolor='white',
-        font=dict(size=10)
+        legend_title='Año'
     )
 
     return fig
@@ -306,7 +354,7 @@ def crear_grafico_inscripciones_por_anio_carrera(df):
         color='carrera_codigo', # Usa el código para el mapeo de colores
         hover_name='carrera_nombre', # Muestra el nombre completo en el hover
         barmode='stack',
-        title='Inscripciones de Grado por Año y Carrera',
+        title='<b>Inscripciones de Grado por Año y Carrera</b>',
         labels={'anio': 'Año', 'cantidad': 'Cantidad de Inscriptos', 'carrera_codigo': 'Carrera'},
         color_discrete_map=COLORES_CARRERAS,
         text='cantidad'
@@ -325,10 +373,8 @@ def crear_grafico_inscripciones_por_anio_carrera(df):
     ))
 
     fig.update_layout(
-        height=GRAPH_HEIGHT,
-        plot_bgcolor='white',
-        yaxis_range=[0, df_totales['cantidad'].max() * 1.15], # Ajustar el rango del eje Y
-        font=dict(size=10)
+        **COMMON_LAYOUT,
+        yaxis_range=[0, df_totales['cantidad'].max() * 1.15] # Ajustar el rango del eje Y
     )
     return fig
 
@@ -349,7 +395,7 @@ def crear_grafico_documentacion_por_dia(df):
         df,
         x='fecha',
         y=['Aprobada', 'Rechazada', 'Duplicado', 'Revisar'],
-        title='📂 Evolución de la Recepción de Documentación por Día',
+        title='<b>Evolución de la Recepción de Documentación por Día</b>',
         labels={'fecha': 'Fecha', 'value': 'Cantidad de Documentos', 'variable': 'Estado'},
         barmode='stack',
         color_discrete_map={
@@ -374,13 +420,11 @@ def crear_grafico_documentacion_por_dia(df):
     ))
 
     fig.update_layout(
-        height=GRAPH_HEIGHT,
-        plot_bgcolor='white',
+        **COMMON_LAYOUT,
         xaxis_title="Fecha",
         yaxis_title="Cantidad de Documentos",
         legend_title_text='Estado',
-        yaxis_range=[0, df['Total'].max() * 1.15], # Ajustar el rango del eje Y
-        font=dict(size=10)
+        yaxis_range=[0, df['Total'].max() * 1.15] # Ajustar el rango del eje Y
     )
     
     return fig
@@ -414,14 +458,12 @@ def crear_grafico_inscriptos_grado_y_pregrado_por_dia(df):
     fig.update_traces(textfont_size=10)
 
     fig.update_layout(
-        title_text='Inscriptos de Grado y Pregrado por Día',
+        **COMMON_LAYOUT,
+        title_text='<b>Inscriptos de Grado y Pregrado por Día</b>',
         xaxis_title='Fecha',
         yaxis_title='Total de Inscriptos',
         legend_title='Año',
-        height=GRAPH_HEIGHT,
-        plot_bgcolor='white',
-        barmode='group',
-        font=dict(size=10)
+        barmode='group'
     )
 
     return fig
@@ -434,7 +476,7 @@ def crear_grafico_egresados_por_tipo(df, tipo):
         return crear_grafico_vacio(f"Egresados de {tipo}")
 
     total_egresados = df['cantidad'].sum()
-    titulo = f'Egresados {tipo} (Total: {total_egresados})'
+    titulo = f'<b>Egresados {tipo} (Total: {total_egresados})</b>'
 
     df_sorted = df.sort_values(by='cantidad', ascending=False)
 
@@ -452,8 +494,7 @@ def crear_grafico_egresados_por_tipo(df, tipo):
 
     fig.update_traces(textposition='inside')
     fig.update_layout(
-        height=GRAPH_HEIGHT,
-        plot_bgcolor='white',
+        **COMMON_LAYOUT,
         showlegend=False,
         xaxis_title='Carrera'
     )
@@ -474,16 +515,16 @@ def crear_grafico_estudiantes_activos(df):
         color='tipo',
         barmode='group',
         text_auto=True,
-        title='Evolución de Estudiantes Activos por Año y Tipo'
+        title='<b>Evolución de Estudiantes Activos por Año y Tipo</b>'
     )
     
     fig.update_traces(textposition='inside')
     
+    
     fig.update_layout(
-        height=GRAPH_HEIGHT,
+        **COMMON_LAYOUT,
         xaxis_title="Año",
         yaxis_title="Cantidad de Estudiantes",
-        plot_bgcolor='white',
         legend_title_text='Tipo de Carrera'
     )
     

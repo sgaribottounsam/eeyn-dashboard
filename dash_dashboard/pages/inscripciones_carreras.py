@@ -23,6 +23,7 @@ from ..graph_factory.factory import (
     crear_grafico_inscriptos_grado_y_pregrado_por_dia, # Add this
     COLORES_CARRERAS # <-- IMPORTAMOS EL DICCIONARIO DE COLORES
 )
+from ..graph_factory.builders import apply_standard_layout
 from ..data.loader import (
     cargar_origen_preinscripcion,
     cargar_nuevos_inscriptos_primer_ingreso,
@@ -208,6 +209,7 @@ def grafico_distribucion_estado():
                  labels={'estado': 'Estado de Preinscripción', 'cantidad': 'Cantidad de Alumnos'},
                  template='plotly_white', text_auto=True)
     fig.update_traces(marker_color='#004B8D', textposition='inside', textfont=dict(size=10))
+    fig = apply_standard_layout(fig)
     fig.update_layout(title_x=0.5, xaxis_tickangle=-45, font=dict(size=10))
     return fig
 
@@ -243,6 +245,7 @@ def grafico_inscriptos_grado_2026():
                  color_discrete_map=COLORES_CARRERAS
                 )
     fig.update_traces(textposition='inside', textfont=dict(size=10))
+    fig = apply_standard_layout(fig)
     fig.update_layout(title_x=0.5, xaxis_tickangle=-30, showlegend=False, font=dict(size=10))
     return fig
 
@@ -257,6 +260,7 @@ def grafico_origen_preinscripcion(df):
                  title=f'<b>Origen de la preinscripción (Total: {total})</b>',
                  template='plotly_white')
     fig.update_traces(texttemplate='%{percent:.1%} (Cant: %{value})', insidetextfont=dict(size=10))
+    fig = apply_standard_layout(fig)
     fig.update_layout(title_x=0.5, font=dict(size=10))
     return fig
 
@@ -271,6 +275,7 @@ def grafico_nuevos_inscriptos_primer_ingreso(df):
                  title=f'<b>Nuevos Inscriptos: Primer Ingreso (Total: {total})</b>',
                  template='plotly_white')
     fig.update_traces(texttemplate='%{percent:.1%} (Cant: %{value})', insidetextfont=dict(size=10))
+    fig = apply_standard_layout(fig)
     fig.update_layout(title_x=0.5, font=dict(size=10))
     return fig
 
@@ -285,6 +290,7 @@ def grafico_nuevos_inscriptos_por_carrera(df):
                  color='carrera',
                  color_discrete_map=COLORES_CARRERAS)
     fig.update_traces(textposition='inside', textfont=dict(size=10))
+    fig = apply_standard_layout(fig)
     fig.update_layout(title_x=0.5, showlegend=False, font=dict(size=10))
     return fig
 
@@ -314,6 +320,7 @@ def grafico_nuevos_inscriptos_historico(df):
             font=dict(size=10)
         )
         
+    fig = apply_standard_layout(fig)
     fig.update_layout(title_x=0.5, font=dict(size=10))
     return fig
 
@@ -328,6 +335,7 @@ def grafico_cambios_carrera_por_carrera(df):
                  color='carrera',
                  color_discrete_map=COLORES_CARRERAS)
     fig.update_traces(textposition='inside', textfont=dict(size=10))
+    fig = apply_standard_layout(fig)
     fig.update_layout(title_x=0.5, showlegend=False, font=dict(size=10))
     return fig
 
@@ -357,6 +365,7 @@ def grafico_cambios_carrera_historico(df):
             font=dict(size=10)
         )
         
+    fig = apply_standard_layout(fig)
     fig.update_layout(title_x=0.5, font=dict(size=10))
     return fig
 

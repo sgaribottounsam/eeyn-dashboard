@@ -9,6 +9,7 @@ import json
 
 # Importamos la instancia de la app
 from ..app import app
+from ..graph_factory.builders import apply_standard_layout
 
 # --- Registro de la Página ---
 dash.register_page(__name__, path='/analisis-cohorte', name='Análisis por Cohorte')
@@ -180,7 +181,8 @@ def create_graph_aspirantes_carrera(cohorte):
                      color='categoria',
                      color_discrete_map=colors)
         
-        fig.update_layout(xaxis_title="Materias Aprobadas", yaxis_title="Cantidad de Aspirantes", legend=dict(orientation="h", yanchor="bottom", y=-0.4, xanchor="center", x=0.5))
+        fig = apply_standard_layout(fig)
+        fig.update_layout(xaxis_title="Materias Aprobadas", yaxis_title="Cantidad de Aspirantes")
         
         return dcc.Graph(figure=fig)
 
@@ -220,7 +222,8 @@ def create_graph_contexto_anual(cohorte):
                      text='total_ingresantes',
                      barmode='stack')
         
-        fig.update_layout(xaxis_title="Cohorte", yaxis_title="Cantidad de Aspirantes", legend=dict(orientation="h", yanchor="bottom", y=-0.4, xanchor="center", x=0.5))
+        fig = apply_standard_layout(fig)
+        fig.update_layout(xaxis_title="Cohorte", yaxis_title="Cantidad de Aspirantes")
         fig.update_xaxes(type='category')
         fig.update_traces(textposition='inside')
 
@@ -257,6 +260,7 @@ def create_graph_estudiantes_grado(cohorte):
                      title='<b>Estudiantes de grado</b>',
                      text='total_ingresantes')
         
+        fig = apply_standard_layout(fig)
         fig.update_layout(xaxis_title="Carrera", yaxis_title="Cantidad de Estudiantes")
 
         return dcc.Graph(figure=fig)
@@ -317,7 +321,8 @@ def create_graph_porcentaje_avance(cohorte):
                      title='<b>Porcentaje de avance por carrera</b>',
                      barmode='stack')
         
-        fig.update_layout(xaxis_title="Porcentaje de Avance", yaxis_title="Cantidad de Estudiantes", legend=dict(orientation="h", yanchor="bottom", y=-0.4, xanchor="center", x=0.5))
+        fig = apply_standard_layout(fig)
+        fig.update_layout(xaxis_title="Porcentaje de Avance", yaxis_title="Cantidad de Estudiantes")
         fig.update_yaxes(showgrid=True)
 
         return dcc.Graph(figure=fig)
@@ -375,6 +380,7 @@ def create_graph_embudo_avance(cohorte, carrera_filter='Todas'):
 
         fig = px.funnel(df, x='total_estudiantes', y='avance', title=title)
         fig.update_traces(textinfo='value+percent total')
+        fig = apply_standard_layout(fig)
 
         return fig
 

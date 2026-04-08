@@ -84,60 +84,90 @@ layout = html.Div([
     html.Div([
         # Gráfico 1
         html.Div([
-            dcc.Graph(id={'type': 'graph-egr', 'index': 'evolucion'}, figure=crear_grafico_evolucion_egresados(df_evolucion_egresados), config={'displayModeBar': False}),
-            dbc.Button("Ampliar", id={'type': 'btn-modal-egr', 'index': 'evolucion'}, className="btn-sm float-end"),
+            html.Div([
+                dcc.Graph(id={'type': 'graph-egr', 'index': 'evolucion'}, figure=crear_grafico_evolucion_egresados(df_evolucion_egresados), config={'displayModeBar': False}),
+                html.Div(id={'type': 'overlay-egr', 'index': 'evolucion'}, style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para ampliar")
+            ], style={'position': 'relative'}),
             dbc.Modal([
                 dbc.ModalHeader(dbc.ModalTitle("Evolución de Egresados")),
-                dbc.ModalBody(dcc.Graph(id={'type': 'modal-graph-egr', 'index': 'evolucion'}, figure=crear_grafico_evolucion_egresados(df_evolucion_egresados), style={'height': '80vh'}, config={'displayModeBar': False}))
+                dbc.ModalBody(html.Div([
+                    dcc.Graph(id={'type': 'modal-graph-egr', 'index': 'evolucion'}, figure=crear_grafico_evolucion_egresados(df_evolucion_egresados), style={'height': '80vh'}, config={'displayModeBar': False}),
+                    html.Div(id={'type': 'overlay-modal-egr', 'index': 'evolucion'}, style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para achicar")
+                ], style={'position': 'relative', 'width': '100%', 'height': '100%'}))
             ], id={'type': 'modal-egr', 'index': 'evolucion'}, size="xl", is_open=False)
         ], className="six columns position-relative"),
         # Gráfico 2
         html.Div([
-            dcc.Graph(id={'type': 'graph-egr', 'index': 'egresados-grado'}, figure=crear_grafico_egresados_por_tipo(df_egresados_grado, 'Grado'), config={'displayModeBar': False}),
-            dbc.Button("Ampliar", id={'type': 'btn-modal-egr', 'index': 'egresados-grado'}, className="btn-sm float-end"),
+            html.Div([
+                dcc.Graph(id={'type': 'graph-egr', 'index': 'egresados-grado'}, figure=crear_grafico_egresados_por_tipo(df_egresados_grado, 'Grado'), config={'displayModeBar': False}),
+                html.Div(id={'type': 'overlay-egr', 'index': 'egresados-grado'}, style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para ampliar")
+            ], style={'position': 'relative'}),
             dbc.Modal([
                 dbc.ModalHeader(dbc.ModalTitle("Egresados de Grado")),
-                dbc.ModalBody(dcc.Graph(id={'type': 'modal-graph-egr', 'index': 'egresados-grado'}, figure=crear_grafico_egresados_por_tipo(df_egresados_grado, 'Grado'), style={'height': '80vh'}, config={'displayModeBar': False}))
+                dbc.ModalBody(html.Div([
+                    dcc.Graph(id={'type': 'modal-graph-egr', 'index': 'egresados-grado'}, figure=crear_grafico_egresados_por_tipo(df_egresados_grado, 'Grado'), style={'height': '80vh'}, config={'displayModeBar': False}),
+                    html.Div(id={'type': 'overlay-modal-egr', 'index': 'egresados-grado'}, style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para achicar")
+                ], style={'position': 'relative', 'width': '100%', 'height': '100%'}))
             ], id={'type': 'modal-egr', 'index': 'egresados-grado'}, size="xl", is_open=False)
         ], className="six columns position-relative"),
     ], className="row"),
     html.Div([
         # Gráfico 3
         html.Div([
-            dcc.Graph(id={'type': 'graph-egr', 'index': 'tasa-graduacion'}, figure=crear_grafico_tasa_graduacion(df_egresados_tasa), config={'displayModeBar': False}),
-            dbc.Button("Ampliar", id={'type': 'btn-modal-egr', 'index': 'tasa-graduacion'}, className="btn-sm float-end"),
+            html.Div([
+                dcc.Graph(id={'type': 'graph-egr', 'index': 'tasa-graduacion'}, figure=crear_grafico_tasa_graduacion(df_egresados_tasa), config={'displayModeBar': False}),
+                html.Div(id={'type': 'overlay-egr', 'index': 'tasa-graduacion'}, style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para ampliar")
+            ], style={'position': 'relative'}),
             dbc.Modal([
                 dbc.ModalHeader(dbc.ModalTitle("Tasa de Graduación")),
-                dbc.ModalBody(dcc.Graph(id={'type': 'modal-graph-egr', 'index': 'tasa-graduacion'}, figure=crear_grafico_tasa_graduacion(df_egresados_tasa), style={'height': '80vh'}, config={'displayModeBar': False}))
+                dbc.ModalBody(html.Div([
+                    dcc.Graph(id={'type': 'modal-graph-egr', 'index': 'tasa-graduacion'}, figure=crear_grafico_tasa_graduacion(df_egresados_tasa), style={'height': '80vh'}, config={'displayModeBar': False}),
+                    html.Div(id={'type': 'overlay-modal-egr', 'index': 'tasa-graduacion'}, style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para achicar")
+                ], style={'position': 'relative', 'width': '100%', 'height': '100%'}))
             ], id={'type': 'modal-egr', 'index': 'tasa-graduacion'}, size="xl", is_open=False)
         ], className="six columns position-relative"),
         # Gráfico 4
         html.Div([
-            dcc.Graph(id={'type': 'graph-egr', 'index': 'duracion-carrera'}, figure=crear_grafico_duracion_carrera(df_egresados), config={'displayModeBar': False}),
-            dbc.Button("Ampliar", id={'type': 'btn-modal-egr', 'index': 'duracion-carrera'}, className="btn-sm float-end"),
+            html.Div([
+                dcc.Graph(id={'type': 'graph-egr', 'index': 'duracion-carrera'}, figure=crear_grafico_duracion_carrera(df_egresados), config={'displayModeBar': False}),
+                html.Div(id={'type': 'overlay-egr', 'index': 'duracion-carrera'}, style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para ampliar")
+            ], style={'position': 'relative'}),
             dbc.Modal([
                 dbc.ModalHeader(dbc.ModalTitle("Duración de Carrera")),
-                dbc.ModalBody(dcc.Graph(id={'type': 'modal-graph-egr', 'index': 'duracion-carrera'}, figure=crear_grafico_duracion_carrera(df_egresados), style={'height': '80vh'}, config={'displayModeBar': False}))
+                dbc.ModalBody(html.Div([
+                    dcc.Graph(id={'type': 'modal-graph-egr', 'index': 'duracion-carrera'}, figure=crear_grafico_duracion_carrera(df_egresados), style={'height': '80vh'}, config={'displayModeBar': False}),
+                    html.Div(id={'type': 'overlay-modal-egr', 'index': 'duracion-carrera'}, style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para achicar")
+                ], style={'position': 'relative', 'width': '100%', 'height': '100%'}))
             ], id={'type': 'modal-egr', 'index': 'duracion-carrera'}, size="xl", is_open=False)
         ], className="six columns position-relative"),
     ], className="row"),
     html.Div([
         # Gráfico 5
         html.Div([
-            dcc.Graph(id={'type': 'graph-egr', 'index': 'egresados-posgrado'}, figure=crear_grafico_egresados_por_tipo(df_egresados_posgrado, 'Posgrado'), config={'displayModeBar': False}),
-            dbc.Button("Ampliar", id={'type': 'btn-modal-egr', 'index': 'egresados-posgrado'}, className="btn-sm float-end"),
+            html.Div([
+                dcc.Graph(id={'type': 'graph-egr', 'index': 'egresados-posgrado'}, figure=crear_grafico_egresados_por_tipo(df_egresados_posgrado, 'Posgrado'), config={'displayModeBar': False}),
+                html.Div(id={'type': 'overlay-egr', 'index': 'egresados-posgrado'}, style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para ampliar")
+            ], style={'position': 'relative'}),
             dbc.Modal([
                 dbc.ModalHeader(dbc.ModalTitle("Egresados de Posgrado")),
-                dbc.ModalBody(dcc.Graph(id={'type': 'modal-graph-egr', 'index': 'egresados-posgrado'}, figure=crear_grafico_egresados_por_tipo(df_egresados_posgrado, 'Posgrado'), style={'height': '80vh'}, config={'displayModeBar': False}))
+                dbc.ModalBody(html.Div([
+                    dcc.Graph(id={'type': 'modal-graph-egr', 'index': 'egresados-posgrado'}, figure=crear_grafico_egresados_por_tipo(df_egresados_posgrado, 'Posgrado'), style={'height': '80vh'}, config={'displayModeBar': False}),
+                    html.Div(id={'type': 'overlay-modal-egr', 'index': 'egresados-posgrado'}, style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para achicar")
+                ], style={'position': 'relative', 'width': '100%', 'height': '100%'}))
             ], id={'type': 'modal-egr', 'index': 'egresados-posgrado'}, size="xl", is_open=False)
         ], className="six columns position-relative"),
         # Gráfico 6
         html.Div([
-            dcc.Graph(id={'type': 'graph-egr', 'index': 'graduados-plan'}, figure=crear_grafico_cantidad_graduados_por_plan(df_egresados_tasa), config={'displayModeBar': False}),
-            dbc.Button("Ampliar", id={'type': 'btn-modal-egr', 'index': 'graduados-plan'}, className="btn-sm float-end"),
+            html.Div([
+                dcc.Graph(id={'type': 'graph-egr', 'index': 'graduados-plan'}, figure=crear_grafico_cantidad_graduados_por_plan(df_egresados_tasa), config={'displayModeBar': False}),
+                html.Div(id={'type': 'overlay-egr', 'index': 'graduados-plan'}, style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para ampliar")
+            ], style={'position': 'relative'}),
             dbc.Modal([
                 dbc.ModalHeader(dbc.ModalTitle("Cantidad de Graduados por Plan")),
-                dbc.ModalBody(dcc.Graph(id={'type': 'modal-graph-egr', 'index': 'graduados-plan'}, figure=crear_grafico_cantidad_graduados_por_plan(df_egresados_tasa), style={'height': '80vh'}, config={'displayModeBar': False}))
+                dbc.ModalBody(html.Div([
+                    dcc.Graph(id={'type': 'modal-graph-egr', 'index': 'graduados-plan'}, figure=crear_grafico_cantidad_graduados_por_plan(df_egresados_tasa), style={'height': '80vh'}, config={'displayModeBar': False}),
+                    html.Div(id={'type': 'overlay-modal-egr', 'index': 'graduados-plan'}, style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para achicar")
+                ], style={'position': 'relative', 'width': '100%', 'height': '100%'}))
             ], id={'type': 'modal-egr', 'index': 'graduados-plan'}, size="xl", is_open=False)
         ], className="six columns position-relative"),
     ], className="row"),
@@ -185,13 +215,27 @@ def update_all_kpis_egr(n0, n1, n2, n3, current_indices):
     
     return new_titles + new_values + [new_indices]
 
-@app.callback(
+app.clientside_callback(
+    """
+    function(n1, n2, is_open) {
+        const ctx = dash_clientside.callback_context;
+        if (!ctx.triggered.length) return window.dash_clientside.no_update;
+
+        const now = new Date().getTime();
+        window.last_dblclick_time = window.last_dblclick_time || 0;
+        const time_diff = now - window.last_dblclick_time;
+        window.last_dblclick_time = now;
+
+        if (time_diff > 0 && time_diff < 400) {
+            window.last_dblclick_time = 0;
+            return !is_open;
+        }
+        return window.dash_clientside.no_update;
+    }
+    """,
     Output({'type': 'modal-egr', 'index': MATCH}, 'is_open'),
-    Input({'type': 'btn-modal-egr', 'index': MATCH}, 'n_clicks'),
+    [Input({'type': 'overlay-egr', 'index': MATCH}, 'n_clicks'),
+     Input({'type': 'overlay-modal-egr', 'index': MATCH}, 'n_clicks')],
     State({'type': 'modal-egr', 'index': MATCH}, 'is_open'),
     prevent_initial_call=True
 )
-def toggle_modal_egr(n_clicks, is_open):
-    if n_clicks:
-        return not is_open
-    return is_open

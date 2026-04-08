@@ -426,36 +426,56 @@ layout = html.Div([
     html.Div(className="row", children=[
         html.Div([
             dcc.Graph(id='graph-cohorte-1', config={'displayModeBar': False}),
-            dbc.Button("Ampliar", id='btn-modal-cohorte-1', className="btn-sm float-end"),
+            html.Div(id='overlay-cohorte-1', style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para ampliar"),
             dbc.Modal([
                 dbc.ModalHeader(dbc.ModalTitle("Aspirantes a carrera")),
-                dbc.ModalBody(dcc.Graph(id='modal-graph-1', style={'height': '80vh'}, config={'displayModeBar': False}))
+                dbc.ModalBody(
+                    html.Div([
+                        dcc.Graph(id='modal-graph-1', style={'height': '80vh'}, config={'displayModeBar': False}),
+                        html.Div(id='overlay-modal-cohorte-1', style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para achicar")
+                    ], style={'position': 'relative', 'width': '100%', 'height': '100%'})
+                )
             ], id='modal-cohorte-1', size="xl", is_open=False)
         ], className="six columns position-relative"),
         html.Div([
             dcc.Graph(id='graph-cohorte-2', config={'displayModeBar': False}),
-            dbc.Button("Ampliar", id='btn-modal-cohorte-2', className="btn-sm float-end"),
+            html.Div(id='overlay-cohorte-2', style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para ampliar"),
             dbc.Modal([
                 dbc.ModalHeader(dbc.ModalTitle("Contexto anual")),
-                dbc.ModalBody(dcc.Graph(id='modal-graph-2', style={'height': '80vh'}, config={'displayModeBar': False}))
+                dbc.ModalBody(
+                    html.Div([
+                        dcc.Graph(id='modal-graph-2', style={'height': '80vh'}, config={'displayModeBar': False}),
+                        html.Div(id='overlay-modal-cohorte-2', style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para achicar")
+                    ], style={'position': 'relative', 'width': '100%', 'height': '100%'})
+                )
             ], id='modal-cohorte-2', size="xl", is_open=False)
         ], className="six columns position-relative"),
     ]),
     html.Div(className="row", children=[
         html.Div([
             dcc.Graph(id='graph-cohorte-3', config={'displayModeBar': False}),
-            dbc.Button("Ampliar", id='btn-modal-cohorte-3', className="btn-sm float-end"),
+            html.Div(id='overlay-cohorte-3', style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para ampliar"),
             dbc.Modal([
                 dbc.ModalHeader(dbc.ModalTitle("Estudiantes de grado")),
-                dbc.ModalBody(dcc.Graph(id='modal-graph-3', style={'height': '80vh'}, config={'displayModeBar': False}))
+                dbc.ModalBody(
+                    html.Div([
+                        dcc.Graph(id='modal-graph-3', style={'height': '80vh'}, config={'displayModeBar': False}),
+                        html.Div(id='overlay-modal-cohorte-3', style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para achicar")
+                    ], style={'position': 'relative', 'width': '100%', 'height': '100%'})
+                )
             ], id='modal-cohorte-3', size="xl", is_open=False)
         ], className="six columns position-relative"),
         html.Div([
             dcc.Graph(id='graph-cohorte-4', config={'displayModeBar': False}),
-            dbc.Button("Ampliar", id='btn-modal-cohorte-4', className="btn-sm float-end"),
+            html.Div(id='overlay-cohorte-4', style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para ampliar"),
             dbc.Modal([
                 dbc.ModalHeader(dbc.ModalTitle("Porcentaje de avance")),
-                dbc.ModalBody(dcc.Graph(id='modal-graph-4', style={'height': '80vh'}, config={'displayModeBar': False}))
+                dbc.ModalBody(
+                    html.Div([
+                        dcc.Graph(id='modal-graph-4', style={'height': '80vh'}, config={'displayModeBar': False}),
+                        html.Div(id='overlay-modal-cohorte-4', style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para achicar")
+                    ], style={'position': 'relative', 'width': '100%', 'height': '100%'})
+                )
             ], id='modal-cohorte-4', size="xl", is_open=False)
         ], className="six columns position-relative"),
     ]),
@@ -470,11 +490,18 @@ layout = html.Div([
                 inline=True,
                 labelStyle={'margin-right': '20px'}
             ),
-            dcc.Graph(id='graph-cohorte-5', config={'displayModeBar': False}),
-            dbc.Button("Ampliar", id='btn-modal-cohorte-5', className="btn-sm float-end"),
+            html.Div([
+                dcc.Graph(id='graph-cohorte-5', config={'displayModeBar': False}),
+                html.Div(id='overlay-cohorte-5', style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para ampliar"),
+            ], style={'position': 'relative'}),
             dbc.Modal([
                 dbc.ModalHeader(dbc.ModalTitle("Embudo de Avance")),
-                dbc.ModalBody(dcc.Graph(id='modal-graph-5', style={'height': '80vh'}, config={'displayModeBar': False}))
+                dbc.ModalBody(
+                    html.Div([
+                        dcc.Graph(id='modal-graph-5', style={'height': '80vh'}, config={'displayModeBar': False}),
+                        html.Div(id='overlay-modal-cohorte-5', style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para achicar")
+                    ], style={'position': 'relative', 'width': '100%', 'height': '100%'})
+                )
             ], id='modal-cohorte-5', size="xl", is_open=False)
         ], className="twelve columns position-relative"),
     ]),
@@ -538,13 +565,28 @@ def update_funnel_graph(selected_cohorte, selected_carrera):
     return fig, fig
 
 for i in range(1, 6):
-    @app.callback(
+    app.clientside_callback(
+        """
+        function(n1, n2, is_open) {
+            const ctx = dash_clientside.callback_context;
+            if (!ctx.triggered.length) return window.dash_clientside.no_update;
+
+            const now = new Date().getTime();
+            window.last_dblclick_time = window.last_dblclick_time || 0;
+            const time_diff = now - window.last_dblclick_time;
+            window.last_dblclick_time = now;
+
+            if (time_diff > 0 && time_diff < 400) {
+                // Reset to avoid tripple clicks toggling it again
+                window.last_dblclick_time = 0;
+                return !is_open;
+            }
+            return window.dash_clientside.no_update;
+        }
+        """,
         Output(f'modal-cohorte-{i}', 'is_open'),
-        Input(f'btn-modal-cohorte-{i}', 'n_clicks'),
+        [Input(f'overlay-cohorte-{i}', 'n_clicks'),
+         Input(f'overlay-modal-cohorte-{i}', 'n_clicks')],
         State(f'modal-cohorte-{i}', 'is_open'),
         prevent_initial_call=True
     )
-    def toggle_modal_cohorte(n_clicks, is_open, i=i):
-        if n_clicks:
-            return not is_open
-        return is_open

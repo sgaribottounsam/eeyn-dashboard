@@ -407,83 +407,128 @@ layout = html.Div([
     html.Hr(),
     html.Div(className="row", children=[
         html.Div([
-            dcc.Graph(id={'type': 'graph-carreras', 'index': 'inscriptos-grado-dia'}, figure=crear_grafico_inscriptos_grado_por_dia(df_filtrado), config={'displayModeBar': False}),
-            dbc.Button("Ampliar", id={'type': 'btn-modal-carreras', 'index': 'inscriptos-grado-dia'}, className="btn-sm float-end"),
+            html.Div([
+                dcc.Graph(id={'type': 'graph-carreras', 'index': 'inscriptos-grado-dia'}, figure=crear_grafico_inscriptos_grado_por_dia(df_filtrado), config={'displayModeBar': False}),
+                html.Div(id={'type': 'overlay-carreras', 'index': 'inscriptos-grado-dia'}, style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para ampliar")
+            ], style={'position': 'relative'}),
             dbc.Modal([
                 dbc.ModalHeader(dbc.ModalTitle("Inscriptos de Grado por Día")),
-                dbc.ModalBody(dcc.Graph(figure=crear_grafico_inscriptos_grado_por_dia(df_filtrado), style={'height': '80vh'}, config={'displayModeBar': False}))
+                dbc.ModalBody(html.Div([
+                    dcc.Graph(figure=crear_grafico_inscriptos_grado_por_dia(df_filtrado), style={'height': '80vh'}, config={'displayModeBar': False}),
+                    html.Div(id={'type': 'overlay-modal-carreras', 'index': 'inscriptos-grado-dia'}, style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para achicar")
+                ], style={'position': 'relative', 'width': '100%', 'height': '100%'}))
             ], id={'type': 'modal-carreras', 'index': 'inscriptos-grado-dia'}, size="xl", is_open=False)
         ], className="six columns position-relative"),
         html.Div([
-            dcc.Graph(id={'type': 'graph-carreras', 'index': 'inscripciones-anio-carrera'}, figure=crear_grafico_inscripciones_por_anio_carrera(df_insc_anio_carrera), config={'displayModeBar': False}),
-            dbc.Button("Ampliar", id={'type': 'btn-modal-carreras', 'index': 'inscripciones-anio-carrera'}, className="btn-sm float-end"),
+            html.Div([
+                dcc.Graph(id={'type': 'graph-carreras', 'index': 'inscripciones-anio-carrera'}, figure=crear_grafico_inscripciones_por_anio_carrera(df_insc_anio_carrera), config={'displayModeBar': False}),
+                html.Div(id={'type': 'overlay-carreras', 'index': 'inscripciones-anio-carrera'}, style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para ampliar")
+            ], style={'position': 'relative'}),
             dbc.Modal([
                 dbc.ModalHeader(dbc.ModalTitle("Inscripciones por Año y Carrera")),
-                dbc.ModalBody(dcc.Graph(figure=crear_grafico_inscripciones_por_anio_carrera(df_insc_anio_carrera), style={'height': '80vh'}, config={'displayModeBar': False}))
+                dbc.ModalBody(html.Div([
+                    dcc.Graph(figure=crear_grafico_inscripciones_por_anio_carrera(df_insc_anio_carrera), style={'height': '80vh'}, config={'displayModeBar': False}),
+                    html.Div(id={'type': 'overlay-modal-carreras', 'index': 'inscripciones-anio-carrera'}, style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para achicar")
+                ], style={'position': 'relative', 'width': '100%', 'height': '100%'}))
             ], id={'type': 'modal-carreras', 'index': 'inscripciones-anio-carrera'}, size="xl", is_open=False)
         ], className="six columns position-relative"),
     ]),
     html.Div(className="row", children=[
         html.Div([
-            dcc.Graph(id={'type': 'graph-carreras', 'index': 'distribucion-estado'}, figure=grafico_distribucion_estado(), config={'displayModeBar': False}),
-            dbc.Button("Ampliar", id={'type': 'btn-modal-carreras', 'index': 'distribucion-estado'}, className="btn-sm float-end"),
+            html.Div([
+                dcc.Graph(id={'type': 'graph-carreras', 'index': 'distribucion-estado'}, figure=grafico_distribucion_estado(), config={'displayModeBar': False}),
+                html.Div(id={'type': 'overlay-carreras', 'index': 'distribucion-estado'}, style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para ampliar")
+            ], style={'position': 'relative'}),
             dbc.Modal([
                 dbc.ModalHeader(dbc.ModalTitle("Distribución de Preinscriptos por Estado")),
-                dbc.ModalBody(dcc.Graph(figure=grafico_distribucion_estado(), style={'height': '80vh'}, config={'displayModeBar': False}))
+                dbc.ModalBody(html.Div([
+                    dcc.Graph(figure=grafico_distribucion_estado(), style={'height': '80vh'}, config={'displayModeBar': False}),
+                    html.Div(id={'type': 'overlay-modal-carreras', 'index': 'distribucion-estado'}, style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para achicar")
+                ], style={'position': 'relative', 'width': '100%', 'height': '100%'}))
             ], id={'type': 'modal-carreras', 'index': 'distribucion-estado'}, size="xl", is_open=False)
         ], className="six columns position-relative"),
         html.Div([
-            dcc.Graph(id={'type': 'graph-carreras', 'index': 'inscriptos-grado-2026'}, figure=grafico_inscriptos_grado_2026(), config={'displayModeBar': False}),
-            dbc.Button("Ampliar", id={'type': 'btn-modal-carreras', 'index': 'inscriptos-grado-2026'}, className="btn-sm float-end"),
+            html.Div([
+                dcc.Graph(id={'type': 'graph-carreras', 'index': 'inscriptos-grado-2026'}, figure=grafico_inscriptos_grado_2026(), config={'displayModeBar': False}),
+                html.Div(id={'type': 'overlay-carreras', 'index': 'inscriptos-grado-2026'}, style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para ampliar")
+            ], style={'position': 'relative'}),
             dbc.Modal([
                 dbc.ModalHeader(dbc.ModalTitle("Inscriptos por Carrera de Grado (2026)")),
-                dbc.ModalBody(dcc.Graph(figure=grafico_inscriptos_grado_2026(), style={'height': '80vh'}, config={'displayModeBar': False}))
+                dbc.ModalBody(html.Div([
+                    dcc.Graph(figure=grafico_inscriptos_grado_2026(), style={'height': '80vh'}, config={'displayModeBar': False}),
+                    html.Div(id={'type': 'overlay-modal-carreras', 'index': 'inscriptos-grado-2026'}, style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para achicar")
+                ], style={'position': 'relative', 'width': '100%', 'height': '100%'}))
             ], id={'type': 'modal-carreras', 'index': 'inscriptos-grado-2026'}, size="xl", is_open=False)
         ], className="six columns position-relative"),
     ]),
     html.Div(className="row", children=[
         html.Div([
-            dcc.Graph(id={'type': 'graph-carreras', 'index': 'documentacion-por-dia'}, figure=crear_grafico_documentacion_por_dia(df_docu_por_dia), config={'displayModeBar': False}),
-            dbc.Button("Ampliar", id={'type': 'btn-modal-carreras', 'index': 'documentacion-por-dia'}, className="btn-sm float-end"),
+            html.Div([
+                dcc.Graph(id={'type': 'graph-carreras', 'index': 'documentacion-por-dia'}, figure=crear_grafico_documentacion_por_dia(df_docu_por_dia), config={'displayModeBar': False}),
+                html.Div(id={'type': 'overlay-carreras', 'index': 'documentacion-por-dia'}, style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para ampliar")
+            ], style={'position': 'relative'}),
             dbc.Modal([
                 dbc.ModalHeader(dbc.ModalTitle("Documentación Recibida por Día")),
-                dbc.ModalBody(dcc.Graph(figure=crear_grafico_documentacion_por_dia(df_docu_por_dia), style={'height': '80vh'}, config={'displayModeBar': False}))
+                dbc.ModalBody(html.Div([
+                    dcc.Graph(figure=crear_grafico_documentacion_por_dia(df_docu_por_dia), style={'height': '80vh'}, config={'displayModeBar': False}),
+                    html.Div(id={'type': 'overlay-modal-carreras', 'index': 'documentacion-por-dia'}, style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para achicar")
+                ], style={'position': 'relative', 'width': '100%', 'height': '100%'}))
             ], id={'type': 'modal-carreras', 'index': 'documentacion-por-dia'}, size="xl", is_open=False)
         ], className="six columns position-relative"),
         html.Div([
-            dcc.Graph(id={'type': 'graph-carreras', 'index': 'inscriptos-grado-pregrado-dia'}, figure=crear_grafico_inscriptos_grado_y_pregrado_por_dia(df_inscriptos_grado_y_pregrado_por_dia), config={'displayModeBar': False}),
-            dbc.Button("Ampliar", id={'type': 'btn-modal-carreras', 'index': 'inscriptos-grado-pregrado-dia'}, className="btn-sm float-end"),
+            html.Div([
+                dcc.Graph(id={'type': 'graph-carreras', 'index': 'inscriptos-grado-pregrado-dia'}, figure=crear_grafico_inscriptos_grado_y_pregrado_por_dia(df_inscriptos_grado_y_pregrado_por_dia), config={'displayModeBar': False}),
+                html.Div(id={'type': 'overlay-carreras', 'index': 'inscriptos-grado-pregrado-dia'}, style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para ampliar")
+            ], style={'position': 'relative'}),
             dbc.Modal([
                 dbc.ModalHeader(dbc.ModalTitle("Inscriptos Grado y Pregrado por Día")),
-                dbc.ModalBody(dcc.Graph(figure=crear_grafico_inscriptos_grado_y_pregrado_por_dia(df_inscriptos_grado_y_pregrado_por_dia), style={'height': '80vh'}, config={'displayModeBar': False}))
+                dbc.ModalBody(html.Div([
+                    dcc.Graph(figure=crear_grafico_inscriptos_grado_y_pregrado_por_dia(df_inscriptos_grado_y_pregrado_por_dia), style={'height': '80vh'}, config={'displayModeBar': False}),
+                    html.Div(id={'type': 'overlay-modal-carreras', 'index': 'inscriptos-grado-pregrado-dia'}, style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para achicar")
+                ], style={'position': 'relative', 'width': '100%', 'height': '100%'}))
             ], id={'type': 'modal-carreras', 'index': 'inscriptos-grado-pregrado-dia'}, size="xl", is_open=False)
         ], className="six columns position-relative"),
     ]),
     html.Div(className="row", children=[
         html.Div([
-            dcc.Graph(id={'type': 'graph-carreras', 'index': 'nuevos-inscriptos-primer-ingreso'}, figure=grafico_nuevos_inscriptos_primer_ingreso(df_nuevos_inscriptos_primer_ingreso), config={'displayModeBar': False}),
-            dbc.Button("Ampliar", id={'type': 'btn-modal-carreras', 'index': 'nuevos-inscriptos-primer-ingreso'}, className="btn-sm float-end"),
+            html.Div([
+                dcc.Graph(id={'type': 'graph-carreras', 'index': 'nuevos-inscriptos-primer-ingreso'}, figure=grafico_nuevos_inscriptos_primer_ingreso(df_nuevos_inscriptos_primer_ingreso), config={'displayModeBar': False}),
+                html.Div(id={'type': 'overlay-carreras', 'index': 'nuevos-inscriptos-primer-ingreso'}, style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para ampliar")
+            ], style={'position': 'relative'}),
             dbc.Modal([
                 dbc.ModalHeader(dbc.ModalTitle("Nuevos Inscriptos: Primer Ingreso")),
-                dbc.ModalBody(dcc.Graph(figure=grafico_nuevos_inscriptos_primer_ingreso(df_nuevos_inscriptos_primer_ingreso), style={'height': '80vh'}, config={'displayModeBar': False}))
+                dbc.ModalBody(html.Div([
+                    dcc.Graph(figure=grafico_nuevos_inscriptos_primer_ingreso(df_nuevos_inscriptos_primer_ingreso), style={'height': '80vh'}, config={'displayModeBar': False}),
+                    html.Div(id={'type': 'overlay-modal-carreras', 'index': 'nuevos-inscriptos-primer-ingreso'}, style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para achicar")
+                ], style={'position': 'relative', 'width': '100%', 'height': '100%'}))
             ], id={'type': 'modal-carreras', 'index': 'nuevos-inscriptos-primer-ingreso'}, size="xl", is_open=False)
         ], className="six columns position-relative"),
         html.Div([
-            dcc.Graph(id={'type': 'graph-carreras', 'index': 'nuevos-inscriptos-por-carrera'}, figure=grafico_nuevos_inscriptos_por_carrera(df_nuevos_inscriptos_por_carrera), config={'displayModeBar': False}),
-            dbc.Button("Ampliar", id={'type': 'btn-modal-carreras', 'index': 'nuevos-inscriptos-por-carrera'}, className="btn-sm float-end"),
+            html.Div([
+                dcc.Graph(id={'type': 'graph-carreras', 'index': 'nuevos-inscriptos-por-carrera'}, figure=grafico_nuevos_inscriptos_por_carrera(df_nuevos_inscriptos_por_carrera), config={'displayModeBar': False}),
+                html.Div(id={'type': 'overlay-carreras', 'index': 'nuevos-inscriptos-por-carrera'}, style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para ampliar")
+            ], style={'position': 'relative'}),
             dbc.Modal([
                 dbc.ModalHeader(dbc.ModalTitle("Nuevos Inscriptos: Por Carrera")),
-                dbc.ModalBody(dcc.Graph(figure=grafico_nuevos_inscriptos_por_carrera(df_nuevos_inscriptos_por_carrera), style={'height': '80vh'}, config={'displayModeBar': False}))
+                dbc.ModalBody(html.Div([
+                    dcc.Graph(figure=grafico_nuevos_inscriptos_por_carrera(df_nuevos_inscriptos_por_carrera), style={'height': '80vh'}, config={'displayModeBar': False}),
+                    html.Div(id={'type': 'overlay-modal-carreras', 'index': 'nuevos-inscriptos-por-carrera'}, style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para achicar")
+                ], style={'position': 'relative', 'width': '100%', 'height': '100%'}))
             ], id={'type': 'modal-carreras', 'index': 'nuevos-inscriptos-por-carrera'}, size="xl", is_open=False)
         ], className="six columns position-relative"),
     ]),
     html.Div(className="row", children=[
         html.Div([
-            dcc.Graph(id={'type': 'graph-carreras', 'index': 'cambios-carrera-por-carrera'}, figure=grafico_cambios_carrera_por_carrera(df_cambios_carrera_por_carrera), config={'displayModeBar': False}),
-            dbc.Button("Ampliar", id={'type': 'btn-modal-carreras', 'index': 'cambios-carrera-por-carrera'}, className="btn-sm float-end"),
+            html.Div([
+                dcc.Graph(id={'type': 'graph-carreras', 'index': 'cambios-carrera-por-carrera'}, figure=grafico_cambios_carrera_por_carrera(df_cambios_carrera_por_carrera), config={'displayModeBar': False}),
+                html.Div(id={'type': 'overlay-carreras', 'index': 'cambios-carrera-por-carrera'}, style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para ampliar")
+            ], style={'position': 'relative'}),
             dbc.Modal([
                 dbc.ModalHeader(dbc.ModalTitle("Cambios de carrera: Por Carrera")),
-                dbc.ModalBody(dcc.Graph(figure=grafico_cambios_carrera_por_carrera(df_cambios_carrera_por_carrera), style={'height': '80vh'}, config={'displayModeBar': False}))
+                dbc.ModalBody(html.Div([
+                    dcc.Graph(figure=grafico_cambios_carrera_por_carrera(df_cambios_carrera_por_carrera), style={'height': '80vh'}, config={'displayModeBar': False}),
+                    html.Div(id={'type': 'overlay-modal-carreras', 'index': 'cambios-carrera-por-carrera'}, style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para achicar")
+                ], style={'position': 'relative', 'width': '100%', 'height': '100%'}))
             ], id={'type': 'modal-carreras', 'index': 'cambios-carrera-por-carrera'}, size="xl", is_open=False)
         ], className="six columns position-relative"),
         html.Div([
@@ -496,11 +541,16 @@ layout = html.Div([
                 value='Todas',
                 labelStyle={'display': 'inline-block', 'margin-right': '10px'}
             ),
-            dcc.Graph(id='graph-cambios-carrera-historico', figure=grafico_cambios_carrera_historico(df_cambios_carrera_historico), config={'displayModeBar': False}),
-            dbc.Button("Ampliar", id={'type': 'btn-modal-carreras', 'index': 'cambios-carrera-historico'}, className="btn-sm float-end"),
+            html.Div([
+                dcc.Graph(id='graph-cambios-carrera-historico', figure=grafico_cambios_carrera_historico(df_cambios_carrera_historico), config={'displayModeBar': False}),
+                html.Div(id={'type': 'overlay-carreras', 'index': 'cambios-carrera-historico'}, style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para ampliar")
+            ], style={'position': 'relative'}),
             dbc.Modal([
                 dbc.ModalHeader(dbc.ModalTitle("Cambios de carrera: Histórico")),
-                dbc.ModalBody(dcc.Graph(id='modal-graph-cambios-carrera-historico', figure=grafico_cambios_carrera_historico(df_cambios_carrera_historico), style={'height': '80vh'}, config={'displayModeBar': False}))
+                dbc.ModalBody(html.Div([
+                    dcc.Graph(id='modal-graph-cambios-carrera-historico', figure=grafico_cambios_carrera_historico(df_cambios_carrera_historico), style={'height': '80vh'}, config={'displayModeBar': False}),
+                    html.Div(id={'type': 'overlay-modal-carreras', 'index': 'cambios-carrera-historico'}, style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para achicar")
+                ], style={'position': 'relative', 'width': '100%', 'height': '100%'}))
             ], id={'type': 'modal-carreras', 'index': 'cambios-carrera-historico'}, size="xl", is_open=False)
         ], className="six columns position-relative"),
     ]),
@@ -516,11 +566,16 @@ layout = html.Div([
                 value='Todas',
                 labelStyle={'display': 'inline-block', 'margin-right': '10px'}
             ),
-            dcc.Graph(id='graph-origen-preinscripcion', figure=grafico_origen_preinscripcion(df_origen_preinscripcion_agg), config={'displayModeBar': False}),
-            dbc.Button("Ampliar", id={'type': 'btn-modal-carreras', 'index': 'origen-preinscripcion'}, className="btn-sm float-end"),
+            html.Div([
+                dcc.Graph(id='graph-origen-preinscripcion', figure=grafico_origen_preinscripcion(df_origen_preinscripcion_agg), config={'displayModeBar': False}),
+                html.Div(id={'type': 'overlay-carreras', 'index': 'origen-preinscripcion'}, style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para ampliar")
+            ], style={'position': 'relative'}),
             dbc.Modal([
                 dbc.ModalHeader(dbc.ModalTitle("Origen de la Preinscripción")),
-                dbc.ModalBody(dcc.Graph(id='modal-graph-origen-preinscripcion', figure=grafico_origen_preinscripcion(df_origen_preinscripcion_agg), style={'height': '80vh'}, config={'displayModeBar': False}))
+                dbc.ModalBody(html.Div([
+                    dcc.Graph(id='modal-graph-origen-preinscripcion', figure=grafico_origen_preinscripcion(df_origen_preinscripcion_agg), style={'height': '80vh'}, config={'displayModeBar': False}),
+                    html.Div(id={'type': 'overlay-modal-carreras', 'index': 'origen-preinscripcion'}, style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para achicar")
+                ], style={'position': 'relative', 'width': '100%', 'height': '100%'}))
             ], id={'type': 'modal-carreras', 'index': 'origen-preinscripcion'}, size="xl", is_open=False)
         ], className="six columns position-relative"),
         html.Div([
@@ -533,11 +588,16 @@ layout = html.Div([
                 value='Todas',
                 labelStyle={'display': 'inline-block', 'margin-right': '10px'}
             ),
-            dcc.Graph(id='graph-nuevos-inscriptos-historico', figure=grafico_nuevos_inscriptos_historico(df_nuevos_inscriptos_historico), config={'displayModeBar': False}),
-            dbc.Button("Ampliar", id={'type': 'btn-modal-carreras', 'index': 'nuevos-inscriptos-historico'}, className="btn-sm float-end"),
+            html.Div([
+                dcc.Graph(id='graph-nuevos-inscriptos-historico', figure=grafico_nuevos_inscriptos_historico(df_nuevos_inscriptos_historico), config={'displayModeBar': False}),
+                html.Div(id={'type': 'overlay-carreras', 'index': 'nuevos-inscriptos-historico'}, style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para ampliar")
+            ], style={'position': 'relative'}),
             dbc.Modal([
                 dbc.ModalHeader(dbc.ModalTitle("Nuevos Inscriptos: Histórico")),
-                dbc.ModalBody(dcc.Graph(id='modal-graph-nuevos-inscriptos-historico', figure=grafico_nuevos_inscriptos_historico(df_nuevos_inscriptos_historico), style={'height': '80vh'}, config={'displayModeBar': False}))
+                dbc.ModalBody(html.Div([
+                    dcc.Graph(id='modal-graph-nuevos-inscriptos-historico', figure=grafico_nuevos_inscriptos_historico(df_nuevos_inscriptos_historico), style={'height': '80vh'}, config={'displayModeBar': False}),
+                    html.Div(id={'type': 'overlay-modal-carreras', 'index': 'nuevos-inscriptos-historico'}, style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para achicar")
+                ], style={'position': 'relative', 'width': '100%', 'height': '100%'}))
             ], id={'type': 'modal-carreras', 'index': 'nuevos-inscriptos-historico'}, size="xl", is_open=False)
         ], className="six columns position-relative"),
     ]),
@@ -624,13 +684,27 @@ def update_all_kpis(n0, n1, n2, n3, current_indices):
     
     return new_titles + new_values + [new_indices]
 
-@app.callback(
+app.clientside_callback(
+    """
+    function(n1, n2, is_open) {
+        const ctx = dash_clientside.callback_context;
+        if (!ctx.triggered.length) return window.dash_clientside.no_update;
+
+        const now = new Date().getTime();
+        window.last_dblclick_time = window.last_dblclick_time || 0;
+        const time_diff = now - window.last_dblclick_time;
+        window.last_dblclick_time = now;
+
+        if (time_diff > 0 && time_diff < 400) {
+            window.last_dblclick_time = 0;
+            return !is_open;
+        }
+        return window.dash_clientside.no_update;
+    }
+    """,
     Output({'type': 'modal-carreras', 'index': MATCH}, 'is_open'),
-    Input({'type': 'btn-modal-carreras', 'index': MATCH}, 'n_clicks'),
+    [Input({'type': 'overlay-carreras', 'index': MATCH}, 'n_clicks'),
+     Input({'type': 'overlay-modal-carreras', 'index': MATCH}, 'n_clicks')],
     State({'type': 'modal-carreras', 'index': MATCH}, 'is_open'),
     prevent_initial_call=True
 )
-def toggle_modal_carreras(n_clicks, is_open):
-    if n_clicks:
-        return not is_open
-    return is_open

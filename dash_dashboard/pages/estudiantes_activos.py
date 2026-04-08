@@ -54,39 +54,59 @@ layout = html.Div([
     ]),
     html.Div([
         html.Div([
-            dcc.Graph(id='grafico-estudiantes-activos', config={'displayModeBar': False}),
-            dbc.Button("Ampliar", id={'type': 'btn-modal-materias', 'index': 'estudiantes-activos'}, className="btn-sm float-end"),
+            html.Div([
+                dcc.Graph(id='grafico-estudiantes-activos', config={'displayModeBar': False}),
+                html.Div(id={'type': 'overlay-materias', 'index': 'estudiantes-activos'}, style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para ampliar")
+            ], style={'position': 'relative'}),
             dbc.Modal([
                 dbc.ModalHeader(dbc.ModalTitle("Evolución de Estudiantes Activos")),
-                dbc.ModalBody(dcc.Graph(id={'type': 'modal-graph-materias', 'index': 'estudiantes-activos'}, style={'height': '80vh'}, config={'displayModeBar': False}))
+                dbc.ModalBody(html.Div([
+                    dcc.Graph(id={'type': 'modal-graph-materias', 'index': 'estudiantes-activos'}, style={'height': '80vh'}, config={'displayModeBar': False}),
+                    html.Div(id={'type': 'overlay-modal-materias', 'index': 'estudiantes-activos'}, style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para achicar")
+                ], style={'position': 'relative', 'width': '100%', 'height': '100%'}))
             ], id={'type': 'modal-materias', 'index': 'estudiantes-activos'}, size="xl", is_open=False)
         ], className="six columns position-relative"),
         html.Div([
             html.Label("Filtrar evolución por:"),
             dcc.RadioItems(id='filtro-evolucion-insc', options=[{'label': 'Todas', 'value': 'Todas'}, {'label': 'Grado', 'value': 'Grado'}], value='Todas', labelStyle={'display': 'inline-block', 'marginRight': '10px'}),
-            dcc.Graph(id='grafico-evolucion-temporal', config={'displayModeBar': False}),
-            dbc.Button("Ampliar", id={'type': 'btn-modal-materias', 'index': 'evolucion-temporal'}, className="btn-sm float-end"),
+            html.Div([
+                dcc.Graph(id='grafico-evolucion-temporal', config={'displayModeBar': False}),
+                html.Div(id={'type': 'overlay-materias', 'index': 'evolucion-temporal'}, style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para ampliar")
+            ], style={'position': 'relative'}),
             dbc.Modal([
                 dbc.ModalHeader(dbc.ModalTitle("Evolución Temporal")),
-                dbc.ModalBody(dcc.Graph(id={'type': 'modal-graph-materias', 'index': 'evolucion-temporal'}, style={'height': '80vh'}, config={'displayModeBar': False}))
+                dbc.ModalBody(html.Div([
+                    dcc.Graph(id={'type': 'modal-graph-materias', 'index': 'evolucion-temporal'}, style={'height': '80vh'}, config={'displayModeBar': False}),
+                    html.Div(id={'type': 'overlay-modal-materias', 'index': 'evolucion-temporal'}, style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para achicar")
+                ], style={'position': 'relative', 'width': '100%', 'height': '100%'}))
             ], id={'type': 'modal-materias', 'index': 'evolucion-temporal'}, size="xl", is_open=False)
         ], className="six columns position-relative"),
     ], className="row"),
     html.Div([
         html.Div([
-            dcc.Graph(id='grafico-insc-cuatri', config={'displayModeBar': False}),
-            dbc.Button("Ampliar", id={'type': 'btn-modal-materias', 'index': 'insc-cuatri'}, className="btn-sm float-end"),
+            html.Div([
+                dcc.Graph(id='grafico-insc-cuatri', config={'displayModeBar': False}),
+                html.Div(id={'type': 'overlay-materias', 'index': 'insc-cuatri'}, style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para ampliar")
+            ], style={'position': 'relative'}),
             dbc.Modal([
                 dbc.ModalHeader(dbc.ModalTitle("Inscripciones por Cuatrimestre")),
-                dbc.ModalBody(dcc.Graph(id={'type': 'modal-graph-materias', 'index': 'insc-cuatri'}, style={'height': '80vh'}, config={'displayModeBar': False}))
+                dbc.ModalBody(html.Div([
+                    dcc.Graph(id={'type': 'modal-graph-materias', 'index': 'insc-cuatri'}, style={'height': '80vh'}, config={'displayModeBar': False}),
+                    html.Div(id={'type': 'overlay-modal-materias', 'index': 'insc-cuatri'}, style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para achicar")
+                ], style={'position': 'relative', 'width': '100%', 'height': '100%'}))
             ], id={'type': 'modal-materias', 'index': 'insc-cuatri'}, size="xl", is_open=False)
         ], className="six columns position-relative"),
         html.Div([
-            dcc.Graph(id='grafico-cpu', config={'displayModeBar': False}),
-            dbc.Button("Ampliar", id={'type': 'btn-modal-materias', 'index': 'cpu'}, className="btn-sm float-end"),
+            html.Div([
+                dcc.Graph(id='grafico-cpu', config={'displayModeBar': False}),
+                html.Div(id={'type': 'overlay-materias', 'index': 'cpu'}, style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para ampliar")
+            ], style={'position': 'relative'}),
             dbc.Modal([
                 dbc.ModalHeader(dbc.ModalTitle("Materias CPU")),
-                dbc.ModalBody(dcc.Graph(id={'type': 'modal-graph-materias', 'index': 'cpu'}, style={'height': '80vh'}, config={'displayModeBar': False}))
+                dbc.ModalBody(html.Div([
+                    dcc.Graph(id={'type': 'modal-graph-materias', 'index': 'cpu'}, style={'height': '80vh'}, config={'displayModeBar': False}),
+                    html.Div(id={'type': 'overlay-modal-materias', 'index': 'cpu'}, style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para achicar")
+                ], style={'position': 'relative', 'width': '100%', 'height': '100%'}))
             ], id={'type': 'modal-materias', 'index': 'cpu'}, size="xl", is_open=False)
         ], className="six columns position-relative"),
     ], className="row"),
@@ -176,13 +196,27 @@ def update_grafico_cpu(pathname):
         return figure, figure
     return crear_grafico_vacio(), crear_grafico_vacio()
 
-@app.callback(
+app.clientside_callback(
+    """
+    function(n1, n2, is_open) {
+        const ctx = dash_clientside.callback_context;
+        if (!ctx.triggered.length) return window.dash_clientside.no_update;
+
+        const now = new Date().getTime();
+        window.last_dblclick_time = window.last_dblclick_time || 0;
+        const time_diff = now - window.last_dblclick_time;
+        window.last_dblclick_time = now;
+
+        if (time_diff > 0 && time_diff < 400) {
+            window.last_dblclick_time = 0;
+            return !is_open;
+        }
+        return window.dash_clientside.no_update;
+    }
+    """,
     Output({'type': 'modal-materias', 'index': MATCH}, 'is_open'),
-    Input({'type': 'btn-modal-materias', 'index': MATCH}, 'n_clicks'),
+    [Input({'type': 'overlay-materias', 'index': MATCH}, 'n_clicks'),
+     Input({'type': 'overlay-modal-materias', 'index': MATCH}, 'n_clicks')],
     State({'type': 'modal-materias', 'index': MATCH}, 'is_open'),
     prevent_initial_call=True
 )
-def toggle_modal_materias(n_clicks, is_open):
-    if n_clicks:
-        return not is_open
-    return is_open

@@ -128,9 +128,14 @@ tipo_importacion = st.selectbox(
 # --- Paso 2: Período o Año ---
 st.header("Paso 2: Seleccionar Período o Año")
 if tipo_importacion == "Inscripciones a Cursadas":
-    # Lógica para Cursadas (no se usa en este caso)
-    st.info("Lógica de selección de período para cursadas no implementada en este ejemplo.")
-    info_paso_2 = "N/A"
+    current_year = datetime.date.today().year
+    anios_disponibles = list(range(2020, current_year + 2))
+    col1, col2 = st.columns(2)
+    with col1:
+        anio_seleccionado = st.selectbox("Seleccionar año:", options=anios_disponibles, index=len(anios_disponibles)-1)
+    with col2:
+        cuatrimestre_seleccionado = st.selectbox("Seleccionar cuatrimestre:", options=["1", "2", "3"])
+    info_paso_2 = f"{anio_seleccionado}-{cuatrimestre_seleccionado}"
 else:
     current_year = datetime.date.today().year
     anios_disponibles = list(range(2020, current_year + 2))
@@ -139,7 +144,7 @@ else:
         options=anios_disponibles,
         index=len(anios_disponibles)-1
     )
-    info_paso_2 = anio_seleccionado
+    info_paso_2 = str(anio_seleccionado)
 
 # --- Paso 3: Cargar Archivo ---
 st.header("Paso 3: Cargar Archivo")
@@ -163,6 +168,7 @@ if st.button("Procesar y Cargar Datos"):
             temp_filename_base = "inscripciones_carreras_temp"
             processed_filename_base = "inscripciones_carreras_procesado"
             resumen_func = lambda: mostrar_resumen('inscripciones_carreras', 'anio', 'Resumen de Inscripciones a Carreras', 'Año', 'Total Inscripciones')
+            arg_tiempo = "--anio"
         
         elif tipo_importacion == "Preinscripciones":
             CLEANER_PATH = CLEANER_PREINSCR_PATH
@@ -170,6 +176,15 @@ if st.button("Procesar y Cargar Datos"):
             temp_filename_base = "preinscripciones_temp"
             processed_filename_base = "preinscriptos_procesado"
             resumen_func = lambda: mostrar_resumen('preinscriptos', 'estado', 'Resumen de Preinscripciones por Estado', 'Estado', 'Total')
+            arg_tiempo = "--anio"
+            
+        elif tipo_importacion == "Inscripciones a Cursadas":
+            CLEANER_PATH = CLEANER_CURSADAS_PATH
+            IMPORTER_PATH = IMPORTER_CURSADAS_PATH
+            temp_filename_base = "inscripciones_cursadas_temp"
+            processed_filename_base = "inscripciones_cursadas_procesado"
+            resumen_func = lambda: mostrar_resumen('inscripciones_cursadas', 'periodo', 'Resumen de Inscripciones a Cursadas', 'Período', 'Total Inscripciones')
+            arg_tiempo = "--periodo"
 
         # Lógica de ejecución común
         temp_filename = f"{temp_filename_base}_{info_paso_2}.xlsx"
@@ -187,7 +202,7 @@ if st.button("Procesar y Cargar Datos"):
             "python", CLEANER_PATH,
             "--archivo-entrada", temp_filepath,
             "--archivo-salida", processed_filepath,
-            "--anio", str(info_paso_2)
+            arg_tiempo, str(info_paso_2)
         ]
         limpieza_exitosa, _ = ejecutar_proceso(comando_limpieza)
 

@@ -36,15 +36,30 @@ def cargar_evolucion_egresados():
         return pd.DataFrame()
 
 def cargar_kpis_inscripciones():
-    """Carga los KPIs desde el archivo CSV de inscripciones."""
-    try:
-        folder = SUB_PATHS["insc_materias"]
-        file_path = os.path.join(DATA_PATH, folder, 'KPI_insc_materias.csv')
-        df_kpi = pd.read_csv(file_path, header=None, names=['Indicador', 'Valor'], decimal=',')
-        return {row['Indicador']: row['Valor'] for _, row in df_kpi.iterrows()}
-    except FileNotFoundError:
-        print(f"Advertencia: No se encontró el archivo en {file_path}")
-        return {}
+    """Calcula los KPIs dinámicamente desde los datos de inscripciones (último año)."""
+    df = cargar_estudiantes_activos()
+    if df.empty: return {}
+    
+    anio_max = df['anio'].max()
+    df_anio = df[df['anio'] == anio_max]
+    
+    kpis = {}
+    kpis['Total Inscripciones'] = len(df_anio)
+    kpis['Total Estudiantes'] = df_anio['identificacion'].nunique()
+    
+    df_grado = df_anio[df_anio['tipo'] == 'Grado']
+    kpis['Inscripciones Grado'] = len(df_grado)
+    kpis['Estudiantes Grado'] = df_grado['identificacion'].nunique()
+    
+    df_cpu = df_anio[df_anio['tipo'] == 'Curso de Ingreso']
+    kpis['Inscripciones CPU'] = len(df_cpu)
+    kpis['Estudiantes CPU'] = df_cpu['identificacion'].nunique()
+    
+    df_pregrado = df_anio[df_anio['tipo'] == 'Pregrado']
+    kpis['Inscripciones Pregrado'] = len(df_pregrado)
+    kpis['Estudiantes Pregrado'] = df_pregrado['identificacion'].nunique()
+    
+    return kpis
 
 def cargar_kpis_egresados():
     """Carga los KPIs desde el archivo CSV de egresados."""
@@ -62,7 +77,7 @@ def cargar_evolucion_todas():
         folder = SUB_PATHS["insc_materias"]
         file_path = os.path.join(DATA_PATH, folder, 'TODAS_evolucion.csv')
         df = pd.read_csv(file_path, encoding='utf-8')
-        columnas_numericas = ['2020', '2021', '2022', '2023', '2024', '2025']
+        columnas_numericas = ['2020', '2021', '2022', '2023', '2024', '2025', '2026']
         for col in columnas_numericas:
             if col in df.columns:
                 # Proceso robusto por columna para evitar problemas de tipos
@@ -78,7 +93,7 @@ def cargar_evolucion_grado():
         folder = SUB_PATHS["insc_materias"]
         file_path = os.path.join(DATA_PATH, folder, 'GRADO_evolucion.csv')
         df = pd.read_csv(file_path, encoding='utf-8')
-        columnas_numericas = ['2020', '2021', '2022', '2023', '2024', '2025']
+        columnas_numericas = ['2020', '2021', '2022', '2023', '2024', '2025', '2026']
         for col in columnas_numericas:
             if col in df.columns:
                 # Proceso robusto por columna para evitar problemas de tipos

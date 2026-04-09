@@ -84,13 +84,13 @@ def build_line_chart(df, x, y, title, labels=None, color=None, color_map=None, m
         fig = set_zoom_2020(fig, df, x)
     return fig
 
-def build_pie_chart(df, names, values, title, hole=0.3):
+def build_pie_chart(df, names, values, title, hole=0.3, color_map=None):
     """Constructor genérico para gráficos de torta Plotly Express."""
     if not title.startswith("<b>"):
         title = f"<b>{title}</b>"
         
     fig = px.pie(
-        df, names=names, values=values, title=title, hole=hole
+        df, names=names, values=values, title=title, hole=hole, color=names, color_discrete_map=color_map
     )
     
     fig.update_traces(textposition='inside', textinfo='percent+label')

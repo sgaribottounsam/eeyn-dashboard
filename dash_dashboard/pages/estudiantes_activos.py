@@ -1,6 +1,7 @@
 from dash import dcc, html, Input, Output, State, ctx, dash, MATCH
 import dash_bootstrap_components as dbc
 import json
+import pandas as pd
 
 # Importamos la instancia de la app
 from ..app import app
@@ -15,10 +16,14 @@ from ..data.loader import (
 from ..graph_factory.factory import (
     crear_grafico_estudiantes_activos,
     crear_grafico_evolucion_temporal,
+    crear_grafico_evolucion_temporal_dinamico,
     crear_grafico_inscripciones_cuatrimestre,
+    crear_grafico_inscripciones_cuatrimestre_dinamico,
     crear_grafico_cpu_materias,
     crear_grafico_vacio
 )
+from ..graph_factory.builders import build_pie_chart
+from ..graph_factory.theme import COLORES_CARRERAS
 
 # --- Carga de datos para la página ---
 df_estudiantes_activos = cargar_estudiantes_activos()
@@ -45,7 +50,7 @@ def create_kpi_card(card_index, initial_kpi_name, initial_kpi_value):
 initial_indices = [(i % len(kpi_names_insc)) for i in range(4)] if kpi_names_insc else [0,0,0,0]
 
 layout = html.Div([
-    html.H1("Estudiantes Activos"),
+    html.H1("Inscripciones a Cursadas"),
     html.Div(id='kpi-row-insc', className="row", children=[
         create_kpi_card(i, 
                         kpi_names_insc[initial_indices[i]],
@@ -54,6 +59,14 @@ layout = html.Div([
     ]),
     html.Div([
         html.Div([
+            html.Label("Filtrar por Cuatrimestre:"),
+            dcc.RadioItems(id='filtro-cuatrimestre-activos', 
+                           options=[{'label': '1', 'value': '1'}, 
+                                    {'label': '2', 'value': '2'}, 
+                                    {'label': 'Verano', 'value': '3'}, 
+                                    {'label': 'Anual', 'value': 'Anual'}], 
+                           value='Anual', 
+                           labelStyle={'display': 'inline-block', 'marginRight': '10px'}),
             html.Div([
                 dcc.Graph(id='grafico-estudiantes-activos', config={'displayModeBar': False}),
                 html.Div(id={'type': 'overlay-materias', 'index': 'estudiantes-activos'}, style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para ampliar")
@@ -69,6 +82,15 @@ layout = html.Div([
         html.Div([
             html.Label("Filtrar evolución por:"),
             dcc.RadioItems(id='filtro-evolucion-insc', options=[{'label': 'Todas', 'value': 'Todas'}, {'label': 'Grado', 'value': 'Grado'}], value='Todas', labelStyle={'display': 'inline-block', 'marginRight': '10px'}),
+            html.Br(),
+            html.Label("Filtrar por Cuatrimestre:"),
+            dcc.RadioItems(id='filtro-cuatrimestre-evolucion', 
+                           options=[{'label': '1', 'value': '1'}, 
+                                    {'label': '2', 'value': '2'}, 
+                                    {'label': 'Verano', 'value': '3'}, 
+                                    {'label': 'Anual', 'value': 'Anual'}], 
+                           value='Anual', 
+                           labelStyle={'display': 'inline-block', 'marginRight': '10px'}),
             html.Div([
                 dcc.Graph(id='grafico-evolucion-temporal', config={'displayModeBar': False}),
                 html.Div(id={'type': 'overlay-materias', 'index': 'evolucion-temporal'}, style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para ampliar")
@@ -84,6 +106,14 @@ layout = html.Div([
     ], className="row"),
     html.Div([
         html.Div([
+            html.Label("Filtrar por Cuatrimestre:"),
+            dcc.RadioItems(id='filtro-cuatrimestre-insc', 
+                           options=[{'label': '1', 'value': '1'}, 
+                                    {'label': '2', 'value': '2'}, 
+                                    {'label': 'Verano', 'value': '3'}, 
+                                    {'label': 'Anual', 'value': 'Anual'}], 
+                           value='Anual', 
+                           labelStyle={'display': 'inline-block', 'marginRight': '10px'}),
             html.Div([
                 dcc.Graph(id='grafico-insc-cuatri', config={'displayModeBar': False}),
                 html.Div(id={'type': 'overlay-materias', 'index': 'insc-cuatri'}, style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para ampliar")
@@ -97,17 +127,55 @@ layout = html.Div([
             ], id={'type': 'modal-materias', 'index': 'insc-cuatri'}, size="xl", is_open=False)
         ], className="six columns position-relative"),
         html.Div([
+            html.Label("Filtrar por Cuatrimestre:"),
+            dcc.RadioItems(id='filtro-cuatrimestre-insc-cpu', 
+                           options=[{'label': '1', 'value': '1'}, 
+                                    {'label': '2', 'value': '2'}, 
+                                    {'label': 'Anual', 'value': 'Anual'}], 
+                           value='Anual', 
+                           labelStyle={'display': 'inline-block', 'marginRight': '10px'}),
             html.Div([
-                dcc.Graph(id='grafico-cpu', config={'displayModeBar': False}),
-                html.Div(id={'type': 'overlay-materias', 'index': 'cpu'}, style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para ampliar")
+                dcc.Graph(id='grafico-insc-cpu', config={'displayModeBar': False}),
+                html.Div(id={'type': 'overlay-materias', 'index': 'insc-cpu'}, style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para ampliar")
             ], style={'position': 'relative'}),
             dbc.Modal([
-                dbc.ModalHeader(dbc.ModalTitle("Materias CPU")),
+                dbc.ModalHeader(dbc.ModalTitle("Inscripciones a cursadas del CPU")),
                 dbc.ModalBody(html.Div([
-                    dcc.Graph(id={'type': 'modal-graph-materias', 'index': 'cpu'}, style={'height': '80vh'}, config={'displayModeBar': False}),
-                    html.Div(id={'type': 'overlay-modal-materias', 'index': 'cpu'}, style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para achicar")
+                    dcc.Graph(id={'type': 'modal-graph-materias', 'index': 'insc-cpu'}, style={'height': '80vh'}, config={'displayModeBar': False}),
+                    html.Div(id={'type': 'overlay-modal-materias', 'index': 'insc-cpu'}, style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para achicar")
                 ], style={'position': 'relative', 'width': '100%', 'height': '100%'}))
-            ], id={'type': 'modal-materias', 'index': 'cpu'}, size="xl", is_open=False)
+            ], id={'type': 'modal-materias', 'index': 'insc-cpu'}, size="xl", is_open=False)
+        ], className="six columns position-relative"),
+    ], className="row"),
+    html.Div([
+        html.Div([
+            html.H3(" ", style={'opacity': 0}), # Spacer para alinear
+            html.Div([
+                dcc.Graph(id='grafico-comp-2026', config={'displayModeBar': False}),
+                html.Div(id={'type': 'overlay-materias', 'index': 'comp-2026'}, style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para ampliar")
+            ], style={'position': 'relative'}),
+            dbc.Modal([
+                dbc.ModalHeader(dbc.ModalTitle("Composición de la Población 2026")),
+                dbc.ModalBody(html.Div([
+                    dcc.Graph(id={'type': 'modal-graph-materias', 'index': 'comp-2026'}, style={'height': '80vh'}, config={'displayModeBar': False}),
+                    html.Div(id={'type': 'overlay-modal-materias', 'index': 'comp-2026'}, style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para achicar")
+                ], style={'position': 'relative', 'width': '100%', 'height': '100%'}))
+            ], id={'type': 'modal-materias', 'index': 'comp-2026'}, size="xl", is_open=False)
+        ], className="six columns position-relative"),
+        
+        html.Div([
+            html.H3(id='total-comp-propuestas', style={'textAlign': 'center', 'color': '#8200e1', 'marginBottom': '0px'}),
+            html.Div([
+                dcc.Graph(id='grafico-comp-propuestas-2026', config={'displayModeBar': False}),
+                html.Div(id={'type': 'overlay-materias', 'index': 'comp-prop-2026'}, style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para ampliar")
+            ], style={'position': 'relative'}),
+            dbc.Modal([
+                dbc.ModalHeader(dbc.ModalTitle("Composición por Propuestas")),
+                dbc.ModalBody(html.Div([
+                    dcc.Graph(id={'type': 'modal-graph-materias', 'index': 'comp-prop-2026'}, style={'height': '80vh'}, config={'displayModeBar': False}),
+                    html.Div(id={'type': 'overlay-modal-materias', 'index': 'comp-prop-2026'}, style={'position': 'absolute', 'top': '0', 'left': '0', 'width': '100%', 'height': '40px', 'zIndex': '10', 'cursor': 'pointer'}, title="Doble click para achicar")
+                ], style={'position': 'relative', 'width': '100%', 'height': '100%'}))
+            ], id={'type': 'modal-materias', 'index': 'comp-prop-2026'}, size="xl", is_open=False)
         ], className="six columns position-relative"),
     ], className="row"),
     dcc.Store(id='kpi-indices-insc', data=initial_indices)
@@ -156,45 +224,156 @@ def update_all_kpis(n0, n1, n2, n3, current_indices):
 @app.callback(
     [Output('grafico-estudiantes-activos', 'figure'),
      Output({'type': 'modal-graph-materias', 'index': 'estudiantes-activos'}, 'figure')],
-    [Input('url', 'pathname')]
+    [Input('url', 'pathname'),
+     Input('filtro-cuatrimestre-activos', 'value')]
 )
-def update_grafico_estudiantes_activos(pathname):
+def update_grafico_estudiantes_activos(pathname, cuatrimestre):
     if pathname == '/estudiantes-activos':
-        figure = crear_grafico_estudiantes_activos(df_estudiantes_activos)
+        if df_estudiantes_activos.empty:
+            return crear_grafico_vacio(), crear_grafico_vacio()
+            
+        df = df_estudiantes_activos.copy()
+        if cuatrimestre != 'Anual':
+            df = df[df['cuatrimestre'] == cuatrimestre]
+            
+        df_group = df.groupby(['anio', 'tipo'])['identificacion'].nunique().reset_index()
+        df_group.rename(columns={'identificacion': 'total_estudiantes'}, inplace=True)
+        
+        # Ensure correct order of types
+        orden_tipos = ['Curso de Ingreso', 'Pregrado', 'Grado', 'Posgrado']
+        df_group['tipo'] = pd.Categorical(df_group['tipo'], categories=orden_tipos, ordered=True)
+        df_group = df_group.sort_values(['anio', 'tipo'])
+
+        figure = crear_grafico_estudiantes_activos(df_group)
         return figure, figure
     return crear_grafico_vacio(), crear_grafico_vacio()
 
 @app.callback(
     [Output('grafico-evolucion-temporal', 'figure'),
      Output({'type': 'modal-graph-materias', 'index': 'evolucion-temporal'}, 'figure')],
-    [Input('filtro-evolucion-insc', 'value')]
+    [Input('url', 'pathname'),
+     Input('filtro-evolucion-insc', 'value'),
+     Input('filtro-cuatrimestre-evolucion', 'value')]
 )
-def update_grafico_evolucion(filtro_tipo):
-    df = df_grado if filtro_tipo == 'Grado' else df_todas
-    figure = crear_grafico_evolucion_temporal(df, filtro_tipo)
-    return figure, figure
+def update_grafico_evolucion(pathname, filtro_tipo, cuatrimestre):
+    if pathname == '/estudiantes-activos':
+        if df_estudiantes_activos.empty:
+            return crear_grafico_vacio(), crear_grafico_vacio()
+            
+        df = df_estudiantes_activos.copy()
+        if filtro_tipo == 'Grado':
+            df = df[df['tipo'] == 'Grado']
+            
+        if cuatrimestre != 'Anual':
+            df = df[df['cuatrimestre'] == cuatrimestre]
+            
+        df_group = df.groupby(['anio', 'carrera'])['identificacion'].nunique().reset_index()
+        df_group.rename(columns={'anio': 'año', 'identificacion': 'estudiantes'}, inplace=True)
+        
+        figure = crear_grafico_evolucion_temporal_dinamico(df_group, filtro_tipo)
+        return figure, figure
+    return crear_grafico_vacio(), crear_grafico_vacio()
 
 @app.callback(
     [Output('grafico-insc-cuatri', 'figure'),
      Output({'type': 'modal-graph-materias', 'index': 'insc-cuatri'}, 'figure')],
-    [Input('url', 'pathname')]
+    [Input('url', 'pathname'),
+     Input('filtro-cuatrimestre-insc', 'value')]
 )
-def update_grafico_insc_cuatri(pathname):
+def update_grafico_insc_cuatri(pathname, cuatrimestre):
     if pathname == '/estudiantes-activos':
-        figure = crear_grafico_inscripciones_cuatrimestre(df_todas)
+        if df_estudiantes_activos.empty:
+            return crear_grafico_vacio(), crear_grafico_vacio()
+            
+        df = df_estudiantes_activos.copy()
+        
+        # Filtramos a carreras de Grado únicamente
+        df = df[df['tipo'] == 'Grado']
+        
+        # Filtramos cuatrimestre
+        if cuatrimestre != 'Anual':
+            df = df[df['cuatrimestre'] == cuatrimestre]
+            
+        # Agrupamos por año y carrera contando inscripciones (size)
+        df_group = df.groupby(['anio', 'carrera']).size().reset_index()
+        df_group.rename(columns={'anio': 'año', 0: 'estudiantes'}, inplace=True)
+        
+        figure = crear_grafico_inscripciones_cuatrimestre_dinamico(df_group, cuatrimestre)
         return figure, figure
     return crear_grafico_vacio(), crear_grafico_vacio()
 
 @app.callback(
-    [Output('grafico-cpu', 'figure'),
-     Output({'type': 'modal-graph-materias', 'index': 'cpu'}, 'figure')],
-    [Input('url', 'pathname')]
+    [Output('grafico-insc-cpu', 'figure'),
+     Output({'type': 'modal-graph-materias', 'index': 'insc-cpu'}, 'figure')],
+    [Input('url', 'pathname'),
+     Input('filtro-cuatrimestre-insc-cpu', 'value')]
 )
-def update_grafico_cpu(pathname):
+def update_grafico_insc_cpu(pathname, cuatrimestre):
     if pathname == '/estudiantes-activos':
-        figure = crear_grafico_cpu_materias(df_cpu_mat)
+        if df_estudiantes_activos.empty:
+            return crear_grafico_vacio(), crear_grafico_vacio()
+            
+        df = df_estudiantes_activos.copy()
+        
+        # Filtramos a cursos de ingreso únicamente
+        df = df[df['tipo'] == 'Curso de Ingreso']
+        
+        # Filtramos cuatrimestre
+        if cuatrimestre != 'Anual':
+            df = df[df['cuatrimestre'] == cuatrimestre]
+            
+        # Agrupamos por año y carrera contando inscripciones (size)
+        df_group = df.groupby(['anio', 'carrera']).size().reset_index()
+        df_group.rename(columns={'anio': 'año', 0: 'estudiantes'}, inplace=True)
+        
+        figure = crear_grafico_inscripciones_cuatrimestre_dinamico(df_group, cuatrimestre, titulo="Inscripciones a cursadas del CPU")
         return figure, figure
     return crear_grafico_vacio(), crear_grafico_vacio()
+
+@app.callback(
+    [Output('grafico-comp-2026', 'figure'),
+     Output({'type': 'modal-graph-materias', 'index': 'comp-2026'}, 'figure')],
+    [Input('url', 'pathname')]
+)
+def update_grafico_comp_2026(pathname):
+    if pathname == '/estudiantes-activos':
+        if df_estudiantes_activos.empty:
+            return crear_grafico_vacio(), crear_grafico_vacio()
+        
+        df_2026 = df_estudiantes_activos[df_estudiantes_activos['anio'] == '2026']
+        df_group = df_2026.groupby('tipo').size().reset_index(name='inscripciones')
+        
+        figure = build_pie_chart(df_group, names='tipo', values='inscripciones', title='Composición de Inscripciones 2026')
+        return figure, figure
+    return crear_grafico_vacio(), crear_grafico_vacio()
+
+@app.callback(
+    [Output('grafico-comp-propuestas-2026', 'figure'),
+     Output({'type': 'modal-graph-materias', 'index': 'comp-prop-2026'}, 'figure'),
+     Output('total-comp-propuestas', 'children')],
+    [Input('url', 'pathname'),
+     Input('grafico-comp-2026', 'clickData')]
+)
+def update_grafico_comp_propuestas(pathname, clickData):
+    if pathname == '/estudiantes-activos':
+        if df_estudiantes_activos.empty:
+            return crear_grafico_vacio(), crear_grafico_vacio(), ""
+        
+        tipo_seleccionado = 'Grado'
+        if clickData and 'points' in clickData and len(clickData['points']) > 0:
+            tipo_seleccionado = clickData['points'][0]['label']
+            
+        df_2026 = df_estudiantes_activos[(df_estudiantes_activos['anio'] == '2026') & (df_estudiantes_activos['tipo'] == tipo_seleccionado)]
+        
+        total = len(df_2026)
+        total_text = f"Total {tipo_seleccionado}: {total:,}".replace(',', '.')
+        
+        df_group = df_2026.groupby('carrera').size().reset_index(name='inscripciones')
+        
+        figure = build_pie_chart(df_group, names='carrera', values='inscripciones', title=f'Propuestas en {tipo_seleccionado} (2026)', color_map=COLORES_CARRERAS)
+        
+        return figure, figure, total_text
+    return crear_grafico_vacio(), crear_grafico_vacio(), ""
 
 app.clientside_callback(
     """

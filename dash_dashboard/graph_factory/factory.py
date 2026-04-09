@@ -52,7 +52,7 @@ def crear_grafico_evolucion_temporal(df_evolucion, filtro_tipo):
     if df_evolucion.empty: return build_empty_chart(f"Evolución Temporal ({filtro_tipo})")
     df_plot = estandarizar_nombres_df(df_evolucion, {'Inscripciones': 'inscripciones'})
 
-    df_melted = df_plot.melt(id_vars=['inscripciones'], value_vars=['2020', '2021', '2022', '2023', '2024', '2025'], var_name='año', value_name='estudiantes')
+    df_melted = df_plot.melt(id_vars=['inscripciones'], value_vars=['2020', '2021', '2022', '2023', '2024', '2025', '2026'], var_name='año', value_name='estudiantes')
     df_melted.columns = ['carrera', 'año', 'estudiantes']
     
     return build_line_chart(
@@ -62,11 +62,20 @@ def crear_grafico_evolucion_temporal(df_evolucion, filtro_tipo):
         color_map=COLORES_CARRERAS, apply_zoom_2020=True
     )
 
+def crear_grafico_evolucion_temporal_dinamico(df_long, filtro_tipo):
+    if df_long.empty: return build_empty_chart(f"Evolución Temporal ({filtro_tipo})")
+    return build_line_chart(
+        df_long, x='año', y='estudiantes', color='carrera', 
+        title=f"Evolución Temporal por Carrera ({filtro_tipo})",
+        labels={'año': 'Año', 'estudiantes': 'Cantidad de Estudiantes'},
+        color_map=COLORES_CARRERAS, apply_zoom_2020=True
+    )
+
 def crear_grafico_inscripciones_cuatrimestre(df_evolucion):
     if df_evolucion.empty: return build_empty_chart("Inscripciones 2do Cuatrimestre")
     df_plot = estandarizar_nombres_df(df_evolucion, {'Inscripciones': 'inscripciones'})
 
-    df_melted = df_plot.melt(id_vars=['inscripciones'], value_vars=['2022', '2023', '2024', '2025'], var_name='año', value_name='estudiantes')
+    df_melted = df_plot.melt(id_vars=['inscripciones'], value_vars=['2022', '2023', '2024', '2025', '2026'], var_name='año', value_name='estudiantes')
     df_melted.columns = ['carrera', 'año', 'estudiantes']
     
     return build_bar_chart(
@@ -75,6 +84,27 @@ def crear_grafico_inscripciones_cuatrimestre(df_evolucion):
         labels={'año': 'Año', 'estudiantes': 'Cantidad de Inscripciones'},
         barmode='group', text='estudiantes', color_map=COLORES_CARRERAS, apply_zoom_2020=True
     )
+
+def crear_grafico_inscripciones_cuatrimestre_dinamico(df_long, cuatrimestre, titulo="Inscripciones a cursadas"):
+    label_cuatrimestre = "Anual" if cuatrimestre == "Anual" else f"{cuatrimestre}do Cuatrimestre" if cuatrimestre == "2" else f"{cuatrimestre}er Cuatrimestre" if cuatrimestre == "1" else cuatrimestre.capitalize()
+    if df_long.empty: return build_empty_chart(f"Inscripciones {label_cuatrimestre}")
+    
+    fig = build_bar_chart(
+        df_long, x='año', y='estudiantes', color='carrera',
+        title=titulo,
+        labels={'año': 'Año', 'estudiantes': 'Cantidad de Inscripciones'},
+        barmode='stack', text='estudiantes', color_map=COLORES_CARRERAS, apply_zoom_2020=True
+    )
+    
+    df_totales = df_long.groupby('año')['estudiantes'].sum().reset_index()
+    fig.add_trace(go.Scatter(
+        x=df_totales['año'], y=df_totales['estudiantes'], text=df_totales['estudiantes'],
+        mode='text', textposition='top center', textfont=dict(color='black', size=11),
+        showlegend=False
+    ))
+    fig.update_layout(yaxis_range=[0, df_totales['estudiantes'].max() * 1.15])
+    return fig
+
 
 def crear_grafico_cpu_materias(df_cpu):
     if df_cpu.empty: return build_empty_chart("CPU: Inscripciones por Materias")

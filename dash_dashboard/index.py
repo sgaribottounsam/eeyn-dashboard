@@ -46,7 +46,7 @@ sidebar = html.Div(
     [
         # Eliminamos el logo de aquí
         html.H4("Menú", style={'margin-top':'40px'}),
-        dcc.Link('👨‍🎓 Estudiantes Activos', href='/estudiantes-activos', style={'display': 'block', 'margin': '5px'}),
+        dcc.Link('👨‍🎓 Inscripciones a Cursadas', href='/estudiantes-activos', style={'display': 'block', 'margin': '5px'}),
         dcc.Link('🚀 Inscripciones a Carreras', href='/inscripciones-carreras', style={'display': 'block', 'margin': '5px'}),
         dcc.Link('🎓 Egresados', href='/egresados', style={'display': 'block', 'margin': '5px'}),
         dcc.Link('📊 Análisis por Cohorte', href='/analisis-cohorte', style={'display': 'block', 'margin': '5px'}),
